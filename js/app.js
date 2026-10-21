@@ -81,7 +81,7 @@ function render({ keepScroll = false } = {}) {
 
 function openSheet(html) {
   sheetRoot.innerHTML = html;
-  sheetRoot.querySelector("input, select, textarea, button:not([data-action='close-sheet'])")?.focus({ preventScroll: true });
+  sheetRoot.querySelector(".sheet")?.focus({ preventScroll: true });
 }
 function closeSheet() { sheetRoot.innerHTML = ""; }
 

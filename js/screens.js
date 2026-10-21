@@ -286,10 +286,9 @@ SCREENS.Profile = () => {
 
 /* ---------- Sheets ---------- */
 function areaSheet() {
-  return sheet(state.role === "worker" ? "Service area" : "Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({
+  return sheet(state.role === "worker" ? "Service area" : "Your area in Cebu City", `<div class="list list-compact">${Object.keys(AREAS).map((area) => row({
     lead: rowIcon("map-pin"),
     title: esc(area),
-    meta: "Cebu City",
     end: area === (state.role === "worker" ? workerById(WORKER_SELF).area : state.area) ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
     action: "set-area", id: area,
   })).join("")}</div>`);

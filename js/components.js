@@ -107,7 +107,7 @@ function chevron() {
 
 function sheet(title, body) {
   return `<div class="sheet-backdrop" data-action="close-sheet">
-    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1">
       <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2><button class="icon-btn" type="button" data-action="close-sheet" aria-label="Close">${icon("x")}</button></div>
       ${body}

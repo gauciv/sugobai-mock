@@ -188,6 +188,8 @@ h1, h2, h3, p { margin: 0; }
   border-radius: var(--r-sheet) var(--r-sheet) 0 0; background: var(--surface); box-shadow: var(--shadow-sheet);
   animation: rise 220ms var(--ease);
 }
+.sheet:focus { outline: none; }
+.list-compact .row { min-height: 52px; padding-block: var(--s-2); }
 .sheet-handle { width: 36px; height: 5px; margin: 0 auto var(--s-2); border-radius: 3px; background: var(--line-strong); }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s-3); }
 .sheet-head h2 { font: var(--t-title); }
