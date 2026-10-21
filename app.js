@@ -13,11 +13,11 @@ document.querySelectorAll(".service-card").forEach((card) => {
 });
 
 document.querySelector("#search-button").addEventListener("click", () => {
-  showToast("Tell us what you need and we’ll find a Sugo for you");
+  showToast("Tell us what needs doing and find the right local pro");
 });
 
 document.querySelector(".location-button").addEventListener("click", () => {
-  showToast("Showing available Sugos in Cebu City");
+  showToast("Showing available local pros in Cebu City");
 });
 
 document.querySelector(".avatar-button").addEventListener("click", () => {
@@ -25,15 +25,19 @@ document.querySelector(".avatar-button").addEventListener("click", () => {
 });
 
 document.querySelector("#all-services").addEventListener("click", () => {
-  showToast("More services are coming soon");
-});
-
-document.querySelector("#promo-button").addEventListener("click", () => {
-  showToast("Your ₱50 welcome offer is ready");
+  showToast("Browse local pros by the work you need done");
 });
 
 document.querySelector("#activity-link").addEventListener("click", () => {
-  document.querySelector('[data-tab="Activity"]').click();
+  showToast("Showing trusted local professionals");
+});
+
+document.querySelector("#worker-button").addEventListener("click", () => {
+  showToast("Opening Jun’s verified profile and project portfolio");
+});
+
+document.querySelector("#worker-invite").addEventListener("click", () => {
+  showToast("Find nearby jobs and build your local reputation");
 });
 
 document.querySelectorAll(".tab").forEach((tab) => {

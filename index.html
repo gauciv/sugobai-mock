@@ -18,8 +18,8 @@
 
       <header class="preview-header">
         <a class="brand" href="#" aria-label="SugoBai preview home">
-          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-          <span>sugobai<span class="brand-dot">.</span></span>
+          <img class="brand-logo" src="assets/sugobai-logo.png" alt="" />
+          <span>SugoBai<span class="brand-dot">.</span></span>
         </a>
       </header>
 
@@ -46,61 +46,62 @@
                       <span class="eyebrow">YOUR LOCATION</span>
                       <button class="location-button" type="button" aria-label="Change location">
                         <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M14.2 7.5c0 3.8-5.2 8.3-5.2 8.3S3.8 11.3 3.8 7.5a5.2 5.2 0 1 1 10.4 0Z"/><circle cx="9" cy="7.4" r="1.8"/></svg>
-                        <span>Cebu City</span><svg class="chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+                      <span>Cebu City</span><svg class="chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
                       </button>
                     </div>
                     <button class="avatar-button" type="button" aria-label="Open profile">M</button>
                   </div>
 
                   <section class="greeting">
-                    <p>Hey, Mika <span class="wave" aria-hidden="true">✳</span></p>
-                    <h1>What can we<br />help you <em>get done?</em></h1>
+                    <p>Good morning, Mika <span class="wave" aria-hidden="true">✳</span></p>
+                    <h1>Find the right<br />person for the <em>job.</em></h1>
                   </section>
 
                   <button class="search-card" type="button" id="search-button">
                     <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.8"/><path d="m13.2 13.2 4 4"/></svg>
-                    <span>What do you need today?</span>
+                    <span>What needs fixing at home?</span>
                     <span class="search-arrow" aria-hidden="true">↗</span>
                   </button>
 
                   <section class="services-section">
-                    <div class="section-heading"><h2>Pick a service</h2><button class="text-link" type="button" id="all-services">See all <span>→</span></button></div>
+                    <div class="section-heading"><h2>Browse services</h2><button class="text-link" type="button" id="all-services">See all <span>→</span></button></div>
                     <div class="service-grid">
-                      <button class="service-card service-orange" data-service="Food & groceries" type="button">
-                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7.5 13h17l-1.4 13H8.9L7.5 13Z"/><path d="M12 13V9.5a4 4 0 0 1 8 0V13M12 18c.3 2.2 1.4 3.5 3.8 3.7"/></svg></span>
-                        <span class="service-name">Food &<br />groceries</span><span class="service-arrow">↗</span>
+                      <button class="service-card service-orange" data-service="Electrical work" type="button">
+                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m18 4-10 14h7l-1 10 10-14h-7l1-10Z"/></svg></span>
+                        <span class="service-name">Electrical</span><span class="service-arrow">↗</span>
                       </button>
-                      <button class="service-card service-blue" data-service="Parcel delivery" type="button">
-                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 4.5 11 6.1v11L16 28l-11-6.4v-11L16 4.5Z"/><path d="m5.5 10.8 10.5 6 10.5-6M16 17v11M10.5 7.5l11 6.2v4.1"/></svg></span>
-                        <span class="service-name">Parcel<br />delivery</span><span class="service-arrow">↗</span>
+                      <button class="service-card service-blue" data-service="Plumbing" type="button">
+                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 5v8a6 6 0 0 0 12 0V9M7 5h6M19 9h6M16 19v4a4 4 0 1 0 8 0v-2"/><path d="M23 18v3"/></svg></span>
+                        <span class="service-name">Plumbing</span><span class="service-arrow">↗</span>
                       </button>
-                      <button class="service-card service-lilac" data-service="Ride" type="button">
-                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m7 17 2.4-7.2A3 3 0 0 1 12.2 8h7.6a3 3 0 0 1 2.8 1.8L25 17v8h-3v-2H10v2H7v-8Z"/><path d="M8 17h17M11 20h.1M21 20h.1M11 8l1.5-3h7L21 8"/></svg></span>
-                        <span class="service-name">Book a<br />ride</span><span class="service-arrow">↗</span>
+                      <button class="service-card service-lilac" data-service="Cleaning" type="button">
+                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m12 7 12 12M9 10l5-5 5 5-5 5M19 19l7 7M6 26l11-11 5 5L11 31H6v-5Z"/><path d="m23 7 1-3m3 7 3-1"/></svg></span>
+                        <span class="service-name">Cleaning</span><span class="service-arrow">↗</span>
                       </button>
-                      <button class="service-card service-green" data-service="Anything else" type="button">
-                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 5v22M5 16h22M8.2 8.2l15.6 15.6m0-15.6L8.2 23.8"/><circle cx="16" cy="16" r="10.5"/></svg></span>
-                        <span class="service-name">Anything<br />else</span><span class="service-arrow">↗</span>
+                      <button class="service-card service-green" data-service="Home repairs" type="button">
+                        <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 15 11-9 11 9M8 13v13h16V13M13 26v-8h6v8"/><path d="m22 6 4 3"/></svg></span>
+                        <span class="service-name">Home repairs</span><span class="service-arrow">↗</span>
                       </button>
                     </div>
                   </section>
 
-                  <section class="promo-card">
-                    <div class="promo-copy"><span class="promo-label">YOUR FIRST SUGO</span><h2>Little task.<br />Big <em>relief.</em></h2><button type="button" class="promo-cta" id="promo-button">Get ₱50 off <span>→</span></button></div>
-                    <div class="promo-art" aria-hidden="true"><div class="sun"></div><div class="bag"><span></span></div><div class="spark spark-a">✳</div><div class="spark spark-b">✦</div><div class="orbit"></div></div>
+                  <section class="pros-section">
+                    <div class="section-heading"><h2>Trusted near you</h2><button class="text-link" type="button" id="activity-link">View all <span>→</span></button></div>
+                    <button class="worker-card" type="button" id="worker-button">
+                      <span class="worker-avatar" aria-hidden="true"><span>JR</span><i>✓</i></span>
+                      <span class="worker-info"><span class="worker-name">Jun Reyes <span class="verified-mark">✓</span></span><span class="worker-trade">Electrician · Cebu City</span><span class="worker-proof"><span class="rating-star">★</span> 4.9 <span class="proof-divider">·</span> 38 jobs <span class="proof-divider">·</span> ID verified</span></span>
+                      <span class="worker-arrow" aria-hidden="true">↗</span>
+                      <span class="portfolio-strip" aria-label="Examples from Jun’s past work"><span class="portfolio-work work-a"></span><span class="portfolio-work work-b"></span><span class="portfolio-work work-c"></span><span class="portfolio-caption">Recent work <b>See portfolio →</b></span></span>
+                    </button>
                   </section>
-
-                  <section class="recent-section">
-                    <div class="section-heading"><h2>Recent activity</h2><button class="text-link" type="button" id="activity-link">View all <span>→</span></button></div>
-                    <div class="empty-activity"><span class="activity-icon">✦</span><span>Your next errand starts here.</span></div>
-                  </section>
+                  <button class="worker-invite" id="worker-invite" type="button"><span>Skilled worker?</span> Find local jobs <b>→</b></button>
                 </div>
 
                 <nav class="tab-bar" aria-label="App navigation">
                   <button class="tab active" data-tab="Home" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="m3 9 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9Z"/></svg><span>Home</span></button>
-                  <button class="tab" data-tab="Activity" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M4 5.5h14M4 11h14M4 16.5h8"/><circle cx="17" cy="16.5" r="2.5"/></svg><span>Activity</span></button>
+                  <button class="tab" data-tab="Jobs" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M4 5.5h14M4 11h14M4 16.5h8"/><circle cx="17" cy="16.5" r="2.5"/></svg><span>Jobs</span></button>
                   <button class="tab" data-tab="Inbox" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M4 5h14a1 1 0 0 1 1 1v11H3V6a1 1 0 0 1 1-1Z"/><path d="m3 14 4.5-.1 1.4 2h3.2l1.4-2 4.5.1"/></svg><span>Inbox</span></button>
-                  <button class="tab" data-tab="Account" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="7.5" r="3.5"/><path d="M4.5 19a6.5 6.5 0 0 1 13 0"/></svg><span>Account</span></button>
+                  <button class="tab" data-tab="Profile" type="button"><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="7.5" r="3.5"/><path d="M4.5 19a6.5 6.5 0 0 1 13 0"/></svg><span>Profile</span></button>
                 </nav>
                 <div class="home-indicator" aria-hidden="true"><span></span></div>
                 <div class="toast" id="toast" role="status" aria-live="polite"></div>
