@@ -26,9 +26,9 @@ Photographer is the Pexels username where the photo page exposed one.
 
 | File | Description | Pexels photo | Photographer |
 |---|---|---|---|
-| `assets/work/jun-1.webp` | Man on ladder fixing ceiling light in empty room | [32391477](https://www.pexels.com/photo/man-fixing-ceiling-light-in-empty-room-32391477/) | — |
+| `assets/work/jun-1.webp` | Kitchen counter with pendant lamp | [6447386](https://www.pexels.com/photo/kitchen-counter-with-sink-in-small-apartment-6447386/) | — |
 | `assets/work/jun-2.webp` | Faceless man installing switches with screwdriver | [5691589](https://www.pexels.com/photo/an-electrician-using-screwdriver-to-repair-the-ac-power-plugs-and-sockets-5691589/) | — |
-| `assets/work/jun-3.webp` | Kitchen counter with pendant lamp | [6447386](https://www.pexels.com/photo/kitchen-counter-with-sink-in-small-apartment-6447386/) | — |
+| `assets/work/jun-3.webp` | Glass pendant light in kitchen | [10486268](https://www.pexels.com/photo/light-bulb-in-glass-lamp-on-ceiling-10486268/) | — |
 | `assets/work/marites-1.webp` | Cleaning white kitchen cabinets | [9462220](https://www.pexels.com/photo/a-person-wiping-the-handles-of-a-kitchen-cabinet-9462220/) | @liliana-drew |
 | `assets/work/marites-2.webp` | Gloved hands wiping bathroom sink | [4239131](https://www.pexels.com/photo/faceless-man-cleaning-sink-in-bathroom-4239131/) | — |
 | `assets/work/marites-3.webp` | Mopping clean tile floor in living room | [6196566](https://www.pexels.com/photo/person-in-gray-sweater-mopping-and-cleaning-the-floor-6196566/) | — |

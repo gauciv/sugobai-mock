@@ -31,7 +31,7 @@ const WORKERS = [
     idVerified: true, since: 2023,
     credential: { title: "Electrical Installation and Maintenance NC II", issuer: "TESDA", year: 2018 },
     about: "Licensed electrician for homes and small shops. I install ceiling fans and lights, fix tripping breakers and add outlets. I explain the work and the price before I start.",
-    work: ["Ceiling light installation", "Wall outlet replacement", "Kitchen wall lights"],
+    work: ["Kitchen wall lights", "Wall outlet replacement", "Pendant light installed"],
   },
   {
     id: "marites", name: "Marites Ybañez", category: "cleaning", area: "Mabolo",
