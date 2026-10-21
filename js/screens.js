@@ -121,6 +121,80 @@ SCREENS.Worker = () => {
     </div>`}`;
 };
 
+/* ---------- Jobs ---------- */
+const STATUS_BADGE = { Open: "badge-open", Requested: "badge-neutral", Hired: "badge-done" };
+
+function jobMeta(job, from) {
+  const where = from ? `${esc(job.area)}, ${distanceKm(from, job.area)} km` : esc(job.area);
+  return `<div class="job-meta"><span>${icon("map-pin", "icon-sm")}${where}</span><span>${icon("clock", "icon-sm")}${esc(job.posted)}</span></div>`;
+}
+
+function offerRow(job, w) {
+  return `<div class="offer">
+    ${avatar(w, 40, { verified: w.idVerified })}
+    <div class="offer-body"><b>${esc(w.name)}</b>${trustLine(w, { jobs: false })}</div>
+    <button class="btn btn-secondary btn-sm" type="button" data-action="hire" data-id="${job.id}:${w.id}">Hire</button>
+  </div>`;
+}
+
+function homeownerJobCard(job) {
+  const cat = categoryById(job.category);
+  const hired = job.hired && workerById(job.hired);
+  let foot;
+  if (hired) {
+    foot = `<button class="offer offer-link" type="button" data-action="open-thread" data-id="${hired.id}">
+      ${avatar(hired, 40, { verified: hired.idVerified })}
+      <div class="offer-body"><b>${esc(hired.name)}</b><span>${job.status === "Requested" ? "Waiting for them to confirm" : "Hired. Message to set a schedule."}</span></div>
+      ${icon("chat-circle")}
+    </button>`;
+  } else if (job.offers.length) {
+    foot = `<p class="job-foot-label">${job.offers.length} ${job.offers.length === 1 ? "offer" : "offers"}</p>${job.offers.map((id) => offerRow(job, workerById(id))).join("")}`;
+  } else {
+    foot = `<p class="job-foot-label is-muted">No offers yet. Nearby pros usually reply within an hour.</p>`;
+  }
+  return `<article class="job-card">
+    <div class="job-head">${rowIcon(cat.icon)}<div class="job-title"><h3>${esc(job.title)}</h3>${jobMeta(job)}</div></div>
+    <div class="job-line"><span class="badge ${STATUS_BADGE[job.status]}">${esc(job.status)}</span><span class="job-budget">${money(job.budget)}<small> budget</small></span></div>
+    <div class="job-foot">${foot}</div>
+  </article>`;
+}
+
+function workerJobCard(job) {
+  const client = PEOPLE[job.client];
+  const hired = job.hired === WORKER_SELF;
+  const offered = job.offers.includes(WORKER_SELF);
+  return `<article class="job-card">
+    <div class="job-poster">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></div>
+    <h3 class="job-card-title">${esc(job.title)}</h3>
+    ${job.details ? `<p class="job-details">${esc(job.details)}</p>` : ""}
+    ${jobMeta(job, workerById(WORKER_SELF).area)}
+    <div class="job-line">
+      <span class="job-budget">${money(job.budget)}<small> budget</small></span>
+      ${hired ? `<span class="badge badge-done">${icon("check-circle")}Hired</span>`
+        : offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent</span>`
+        : `<button class="btn btn-secondary btn-sm" type="button" data-action="offer" data-id="${job.id}">Send offer</button>`}
+    </div>
+  </article>`;
+}
+
+SCREENS.Jobs = () => {
+  if (state.role === "worker") {
+    const self = workerById(WORKER_SELF);
+    const jobs = state.jobs
+      .filter((j) => (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
+      .sort((a, b) => distanceKm(self.area, a.area) - distanceKm(self.area, b.area));
+    return `${pageHeader("Jobs near you", { sub: `Open requests around ${self.area}, closest first` })}
+      ${jobs.length ? jobs.map(workerJobCard).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
+  }
+  const mine = state.jobs.filter((j) => j.client === "mika");
+  if (!mine.length) {
+    return `${pageHeader("Your jobs")}
+      ${emptyState({ icon: "briefcase", title: "No jobs yet", text: "Describe what you need and nearby pros will send you offers.", action: `<button class="btn btn-primary" type="button" data-action="post-job">${icon("plus")}Post a job</button>` })}`;
+  }
+  return `${pageHeader("Your jobs", { end: `<button class="btn btn-primary btn-sm" type="button" data-action="post-job">${icon("plus", "icon-sm")}Post a job</button>` })}
+    ${mine.map(homeownerJobCard).join("")}`;
+};
+
 /* ---------- Sheets ---------- */
 function areaSheet() {
   return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({

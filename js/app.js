@@ -125,11 +125,11 @@ const ACTIONS = {
     render({ keepScroll: true });
     showToast(`You hired ${firstName(workerById(workerId).name)}`);
   },
-  accept: (el) => {
+  offer: (el) => {
     const job = state.jobs.find((j) => j.id === el.dataset.id);
-    job.status = "Accepted"; job.hired = WORKER_SELF;
+    job.offers.push(WORKER_SELF);
     render({ keepScroll: true });
-    showToast("Job accepted. The client has been notified.");
+    showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
   },
   "switch-role": () => {
     state.role = state.role === "worker" ? "homeowner" : "worker";
