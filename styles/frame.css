@@ -14,6 +14,7 @@ body {
 }
 
 .stage { min-height: 100dvh; }
+.stage-qr { display: none; }
 
 .device { height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--paper); }
 .device-screen { position: relative; height: 100%; overflow: hidden; }
@@ -34,6 +35,19 @@ body {
 
   body { overflow: hidden; }
   .stage { position: relative; height: 100dvh; min-height: 0; }
+
+  /* QR card beside the phone, for the live presentation. Only where there is room. */
+  @media (min-width: 1100px) {
+    .stage-qr {
+      position: absolute; top: 50%; left: calc(50% + 207px * var(--frame-scale, 1) + 56px);
+      display: grid; justify-items: center; gap: 4px; width: 232px; padding: 16px 16px 18px;
+      border-radius: var(--r-sheet); background: var(--surface); transform: translateY(-50%);
+      text-align: center;
+    }
+    .stage-qr img { width: 200px; height: 200px; margin-bottom: 8px; }
+    .stage-qr p { font: var(--t-heading); }
+    .stage-qr span { color: var(--ink-2); font: var(--t-small); }
+  }
 
   .device {
     position: absolute; top: 50%; left: 50%;

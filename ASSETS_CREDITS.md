@@ -59,3 +59,7 @@ Photographer is the Pexels username where the photo page exposed one.
 ## Logo
 
 `assets/sugobai-mark-*.webp` are resized from the project's own `assets/sugobai-logo.png`.
+
+## QR code
+
+`assets/qr-sugobai.svg` and `assets/qr-sugobai.png` (1200×1200) encode https://sugobai.netlify.app. Generated with the `qrcode` npm package (v1.5.4, MIT), error correction level M.
