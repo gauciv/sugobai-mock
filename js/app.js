@@ -118,7 +118,11 @@ const ACTIONS = {
   attach: () => showToast("Photo sharing isn't available in this preview"),
   "open-thread": (el) => { state.unread = state.unread.filter((id) => id !== el.dataset.id); go("Thread", { threadId: el.dataset.id }); },
   area: () => openSheet(areaSheet()),
-  "set-area": (el) => { state.area = el.dataset.id; closeSheet(); render(); showToast(`Showing pros near ${state.area}`); },
+  "set-area": (el) => {
+    closeSheet();
+    if (state.role === "worker") { workerById(WORKER_SELF).area = el.dataset.id; render(); showToast(`Service area set to ${el.dataset.id}`); return; }
+    state.area = el.dataset.id; render(); showToast(`Showing pros near ${state.area}`);
+  },
   "post-job": () => openSheet(postJobSheet()),
   request: (el) => {
     const worker = workerById(el.dataset.id);

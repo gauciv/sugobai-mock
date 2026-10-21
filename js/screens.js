@@ -248,13 +248,49 @@ SCREENS.Thread = () => {
     </form>`;
 };
 
+/* ---------- Profile tab ---------- */
+SCREENS.Profile = () => {
+  const worker = state.role === "worker";
+  const user = me();
+  const head = worker
+    ? `<div class="account">${avatar(user, 64, { verified: user.idVerified })}<div><h2>${esc(user.name)}</h2><p>${esc(categoryById(user.category).trade)} in ${esc(user.area)}</p></div></div>
+       <div class="account-trust">${trustLine(user)}</div>`
+    : `<div class="account">${avatar(user, 64)}<div><h2>${esc(user.name)}</h2><p>Homeowner in ${esc(state.area)}</p></div></div>`;
+
+  const rows = worker
+    ? [
+      row({ lead: rowIcon("user"), title: "View my public profile", meta: "What homeowners see", end: chevron(), action: "my-profile" }),
+      row({ lead: rowIcon("map-pin"), title: "Service area", meta: `${esc(user.area)} and nearby`, end: chevron(), action: "area" }),
+      row({ lead: rowIcon("arrows-left-right"), title: "Switch to homeowner mode", meta: "Book pros for your own home", end: chevron(), action: "switch-role" }),
+    ]
+    : [
+      row({ lead: rowIcon("map-pin"), title: "Your area", meta: `${esc(state.area)}, Cebu City`, end: chevron(), action: "area" }),
+      row({ lead: rowIcon("arrows-left-right"), title: "Switch to worker mode", meta: "Find jobs and get hired near you", end: chevron(), action: "switch-role" }),
+    ];
+
+  const saved = state.saved.map(workerById);
+  const savedList = worker ? "" : `<section class="section">
+      <div class="section-head"><h2>Saved pros</h2></div>
+      ${saved.length
+        ? `<div class="list">${saved.map((w) => row({
+          lead: avatar(w, 44, { verified: w.idVerified }),
+          top: `<span class="row-title">${esc(w.name)}</span>`,
+          meta: `${esc(categoryById(w.category).trade)} in ${esc(w.area)}`,
+          end: chevron(), action: "open-worker", id: w.id,
+        })).join("")}</div>`
+        : `<p class="saved-empty">Tap ${icon("heart", "icon-sm")} on a pro to keep them here.</p>`}
+    </section>`;
+
+  return `${pageHeader("Profile")}${head}<div class="list account-rows">${rows.join("")}</div>${savedList}`;
+};
+
 /* ---------- Sheets ---------- */
 function areaSheet() {
-  return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({
+  return sheet(state.role === "worker" ? "Service area" : "Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({
     lead: rowIcon("map-pin"),
     title: esc(area),
     meta: "Cebu City",
-    end: area === state.area ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
+    end: area === (state.role === "worker" ? workerById(WORKER_SELF).area : state.area) ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
     action: "set-area", id: area,
   })).join("")}</div>`);
 }

@@ -121,3 +121,12 @@
 .composer-send { color: var(--accent-ink); }
 .row.is-unread .row-meta { color: var(--ink); font-weight: 600; }
 .unread-dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--accent); vertical-align: 1px; }
+
+/* ---------- Profile tab ---------- */
+.account { display: flex; align-items: center; gap: var(--s-4); }
+.account h2 { font: var(--t-title); }
+.account p { color: var(--ink-2); font: var(--t-small); }
+.account-trust { margin-top: var(--s-3); }
+.account-rows { margin-top: var(--s-5); }
+.row-icon .icon { color: var(--ink); }
+.saved-empty { display: flex; align-items: center; gap: 4px; color: var(--ink-2); font: var(--t-small); }
