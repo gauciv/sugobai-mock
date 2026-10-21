@@ -57,41 +57,50 @@
                     <h1>Find the right<br />person for the <em>job.</em></h1>
                   </section>
 
-                  <button class="search-card" type="button" id="search-button">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.8"/><path d="m13.2 13.2 4 4"/></svg>
-                    <span>What needs fixing at home?</span>
-                    <span class="search-arrow" aria-hidden="true">↗</span>
-                  </button>
+                  <div class="search-row">
+                    <button class="search-card" type="button" id="search-button">
+                      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.8"/><path d="m13.2 13.2 4 4"/></svg>
+                      <span>What needs fixing at home?</span>
+                    </button>
+                    <button class="filter-button" id="filter-button" type="button" aria-label="Filter professionals"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M6 10h8m-5 5h2"/><circle cx="7" cy="5" r="1.5"/><circle cx="12" cy="10" r="1.5"/></svg></button>
+                  </div>
+
+                  <section class="home-hero">
+                    <div class="hero-copy"><span class="hero-label">LOCAL HELP, MADE SIMPLE</span><h2>Good work.<br /><em>Good people.</em></h2><button id="post-job" type="button">Post a job <span>→</span></button></div>
+                    <div class="hero-art" aria-hidden="true"><span class="hero-orbit"></span><img src="assets/sugobai-logo.png" alt="" /></div>
+                    <span class="hero-spark hero-spark-one" aria-hidden="true">✦</span><span class="hero-spark hero-spark-two" aria-hidden="true">✳</span>
+                  </section>
 
                   <section class="services-section">
-                    <div class="section-heading"><h2>Browse services</h2><button class="text-link" type="button" id="all-services">See all <span>→</span></button></div>
+                    <div class="section-heading"><h2>Popular services</h2><button class="text-link" type="button" id="all-services">See all <span>→</span></button></div>
                     <div class="service-grid">
                       <button class="service-card service-orange" data-service="Electrical work" type="button">
                         <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m18 4-10 14h7l-1 10 10-14h-7l1-10Z"/></svg></span>
-                        <span class="service-name">Electrical</span><span class="service-arrow">↗</span>
+                        <span class="service-name">Electric</span>
                       </button>
                       <button class="service-card service-blue" data-service="Plumbing" type="button">
                         <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 5v8a6 6 0 0 0 12 0V9M7 5h6M19 9h6M16 19v4a4 4 0 1 0 8 0v-2"/><path d="M23 18v3"/></svg></span>
-                        <span class="service-name">Plumbing</span><span class="service-arrow">↗</span>
+                        <span class="service-name">Plumbing</span>
                       </button>
                       <button class="service-card service-lilac" data-service="Cleaning" type="button">
                         <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m12 7 12 12M9 10l5-5 5 5-5 5M19 19l7 7M6 26l11-11 5 5L11 31H6v-5Z"/><path d="m23 7 1-3m3 7 3-1"/></svg></span>
-                        <span class="service-name">Cleaning</span><span class="service-arrow">↗</span>
+                        <span class="service-name">Cleaning</span>
                       </button>
-                      <button class="service-card service-green" data-service="Home repairs" type="button">
+                      <button class="service-card service-green" data-service="Carpentry" type="button">
                         <span class="service-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 15 11-9 11 9M8 13v13h16V13M13 26v-8h6v8"/><path d="m22 6 4 3"/></svg></span>
-                        <span class="service-name">Home repairs</span><span class="service-arrow">↗</span>
+                        <span class="service-name">Carpentry</span>
                       </button>
                     </div>
                   </section>
 
                   <section class="pros-section">
-                    <div class="section-heading"><h2>Trusted near you</h2><button class="text-link" type="button" id="activity-link">View all <span>→</span></button></div>
+                    <div class="section-heading"><h2>Popular near you</h2><button class="text-link" type="button" id="activity-link">View all <span>→</span></button></div>
                     <button class="worker-card" type="button" id="worker-button">
                       <span class="worker-avatar" aria-hidden="true"><span>JR</span><i>✓</i></span>
-                      <span class="worker-info"><span class="worker-name">Jun Reyes <span class="verified-mark">✓</span></span><span class="worker-trade">Electrician · Cebu City</span><span class="worker-proof"><span class="rating-star">★</span> 4.9 <span class="proof-divider">·</span> 38 jobs <span class="proof-divider">·</span> ID verified</span></span>
-                      <span class="worker-arrow" aria-hidden="true">↗</span>
+                      <span class="worker-info"><span class="worker-name">Jun Reyes <span class="verified-mark">✓</span><span class="trade-chip">Electrician</span></span><span class="worker-trade">Cebu City · Available today</span><span class="worker-proof"><span class="rating-star">★</span> 4.9 <span class="proof-divider">·</span> 38 reviews <span class="proof-divider">·</span> Verified</span></span>
+                      <span class="worker-price">₱350<small> / visit</small></span>
                       <span class="portfolio-strip" aria-label="Examples from Jun’s past work"><span class="portfolio-work work-a"></span><span class="portfolio-work work-b"></span><span class="portfolio-work work-c"></span><span class="portfolio-caption">Recent work <b>See portfolio →</b></span></span>
+                      <span class="worker-book">View profile <span>→</span></span>
                     </button>
                   </section>
                   <button class="worker-invite" id="worker-invite" type="button"><span>Skilled worker?</span> Find local jobs <b>→</b></button>

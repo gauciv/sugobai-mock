@@ -16,6 +16,14 @@ document.querySelector("#search-button").addEventListener("click", () => {
   showToast("Tell us what needs doing and find the right local pro");
 });
 
+document.querySelector("#filter-button").addEventListener("click", () => {
+  showToast("Filter by service, rating, and availability");
+});
+
+document.querySelector("#post-job").addEventListener("click", () => {
+  showToast("Describe the job and get offers from nearby pros");
+});
+
 document.querySelector(".location-button").addEventListener("click", () => {
   showToast("Showing available local pros in Cebu City");
 });
