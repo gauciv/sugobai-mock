@@ -42,7 +42,7 @@ h1, h2, h3, p { margin: 0; }
 .page-header p { margin-top: var(--s-1); color: var(--ink-2); font: var(--t-small); }
 
 .nav-header {
-  position: sticky; top: 0; z-index: 5;
+  position: sticky; top: calc(-1 * var(--safe-top)); z-index: 5;
   display: flex; align-items: center; gap: var(--s-2);
   margin: calc(-1 * var(--safe-top)) calc(-1 * var(--gutter)) 0;
   padding: calc(var(--safe-top) + var(--s-2)) var(--gutter) var(--s-2);

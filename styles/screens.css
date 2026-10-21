@@ -18,3 +18,7 @@
 .category:active { background: var(--paper); }
 
 .row-check { color: var(--trust); }
+
+/* ---------- Pro list ---------- */
+.pros-chips { margin-top: var(--s-3); }
+.pros-count { margin: var(--s-4) 0 var(--s-3); color: var(--ink-2); font: var(--t-small); }

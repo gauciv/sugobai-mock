@@ -46,6 +46,31 @@ SCREENS.Home = () => {
     </section>`;
 };
 
+/* ---------- Pro list and search ---------- */
+SCREENS.Pros = () => {
+  const cat = categoryById(state.category);
+  const list = rankedWorkers({ category: state.category, query: state.query, filters: state.filters });
+  const title = state.query ? "Search" : cat ? cat.plural : "Pros near you";
+  const chip = (key, label, iconName) => `<button class="chip" type="button" data-action="filter" data-id="${key}" aria-pressed="${state.filters[key]}">${iconName ? icon(iconName) : ""}${label}</button>`;
+  const anyFilter = Object.values(state.filters).some(Boolean);
+  const count = `${list.length} ${list.length === 1 ? "pro" : "pros"}${state.query ? ` for “${esc(state.query)}”` : ""} near ${esc(state.area)}`;
+  return `
+    ${navHeader({ title: esc(title) })}
+    ${searchForm(cat ? `Search ${cat.plural.toLowerCase()}` : "Search pros and services")}
+    <div class="chips pros-chips" role="group" aria-label="Filters">
+      ${chip("verified", "ID verified", "seal-check")}${chip("today", "Available today")}${chip("top", "4.8+ rating", "star")}
+    </div>
+    <p class="pros-count">${count}</p>
+    ${list.length
+      ? list.map((w) => workerCard(w, { saved: state.saved.includes(w.id), from: state.area })).join("")
+      : emptyState({
+        icon: "magnifying-glass",
+        title: "No pros match",
+        text: anyFilter ? "Try turning off a filter." : "Try a different word, like “fan” or “sink”.",
+        action: anyFilter ? `<button class="btn btn-secondary" type="button" data-action="clear-filters">Clear filters</button>` : "",
+      })}`;
+};
+
 /* ---------- Sheets ---------- */
 function areaSheet() {
   return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({

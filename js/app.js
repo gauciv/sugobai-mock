@@ -96,6 +96,7 @@ const ACTIONS = {
   tab: (el) => { state.category = ""; state.query = ""; go(el.dataset.tab); },
   category: (el) => go("Pros", { category: el.dataset.id, query: "" }),
   "all-pros": () => go("Pros", { category: "", query: "" }),
+  "clear-filters": () => { state.filters = { verified: false, today: false, top: false }; render(); },
   filter: (el) => { const key = el.dataset.id; state.filters[key] = !state.filters[key]; render({ keepScroll: true }); },
   "open-worker": (el) => go("Worker", { workerId: el.dataset.id, workerTab: "About" }),
   "worker-tab": (el) => { state.workerTab = el.dataset.id; render({ keepScroll: true }); },
