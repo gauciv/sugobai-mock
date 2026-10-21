@@ -31,7 +31,7 @@ const WORKERS = [
     idVerified: true, since: 2023,
     credential: { title: "Electrical Installation and Maintenance NC II", issuer: "TESDA", year: 2018 },
     about: "Licensed electrician for homes and small shops. I install ceiling fans and lights, fix tripping breakers and add outlets. I explain the work and the price before I start.",
-    work: ["Ceiling fan installed in a sala", "New breaker panel", "Kitchen pendant lights"],
+    work: ["Ceiling light installation", "Wall outlet replacement", "Kitchen wall lights"],
   },
   {
     id: "marites", name: "Marites Ybañez", category: "cleaning", area: "Mabolo",
@@ -39,7 +39,7 @@ const WORKERS = [
     idVerified: true, since: 2022,
     credential: null,
     about: "General and deep cleaning for condos and houses. I bring my own supplies. Move-in and move-out cleaning available on weekends.",
-    work: ["Kitchen deep clean", "Bathroom tiles and grout", "Condo living room"],
+    work: ["Kitchen cabinets wiped down", "Bathroom sink and fixtures", "Floors mopped, condo unit"],
   },
   {
     id: "rico", name: "Rico Abellana", category: "plumbing", area: "Lahug",
@@ -47,7 +47,7 @@ const WORKERS = [
     idVerified: true, since: 2023,
     credential: { title: "Plumbing NC II", issuer: "TESDA", year: 2016 },
     about: "Leaks, clogged drains, faucet and toilet replacement. Fifteen years of residential plumbing around Lahug and Busay.",
-    work: ["Sink drain replaced", "New kitchen faucet", "Shower set installed"],
+    work: ["Water line repair", "New bathroom faucet", "Shower enclosure installed"],
   },
   {
     id: "ana", name: "Ana Pacaña", category: "electrical", area: "Banilad",
@@ -55,7 +55,7 @@ const WORKERS = [
     idVerified: true, since: 2024,
     credential: { title: "Electrical Installation and Maintenance NC II", issuer: "TESDA", year: 2021 },
     about: "Switches, outlets, lighting and safety checks before you move into a new place. Weekday evenings are fine.",
-    work: ["Outlet and switch repair", "LED lighting upgrade", "Safety check with tester"],
+    work: ["Switch installation", "Outlet wiring", "Safety check with a tester"],
   },
   {
     id: "tomas", name: "Tomas Alcoseba", category: "carpentry", area: "Talamban",
@@ -63,7 +63,7 @@ const WORKERS = [
     idVerified: true, since: 2022,
     credential: { title: "Carpentry NC II", issuer: "TESDA", year: 2012 },
     about: "Cabinet repair, wall shelves and small furniture made to fit your space. I can buy the materials for you and show the receipts.",
-    work: ["Floating wall shelves", "Cabinet hinge repair", "Narra entry bench"],
+    work: ["Wooden corner shelf", "Cabinet hinge repair", "Narra table and stool"],
   },
   {
     id: "luis", name: "Luis Tumulak", category: "painting", area: "IT Park",
@@ -71,7 +71,7 @@ const WORKERS = [
     idVerified: false, since: 2025,
     credential: null,
     about: "Interior and exterior repainting with careful masking and clean edges. Price is for labor; paint is billed at cost.",
-    work: ["Bedroom repaint", "Accent wall", "Gate and exterior wall"],
+    work: ["Accent wall, clean edges", "Bedroom repaint", "Apartment exterior"],
   },
   {
     id: "kent", name: "Kent Lapitan", category: "errands", area: "IT Park",
@@ -79,7 +79,7 @@ const WORKERS = [
     idVerified: true, since: 2024,
     credential: null,
     about: "Motorcycle errands around Cebu City: groceries, bills payment, parcel drop-off and pick-up. Within 5 km.",
-    work: ["Grocery run", "Parcel drop-off", "Pharmacy pick-up"],
+    work: ["Errands by motorcycle", "Groceries left at the door", "Pharmacy pick-up handoff"],
   },
 ];
 
