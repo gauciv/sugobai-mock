@@ -17,11 +17,13 @@
   </head>
   <body>
     <div class="stage">
-      <aside class="stage-qr">
-        <img src="assets/qr-sugobai.svg" alt="QR code for sugobai.netlify.app" width="200" height="200" />
-        <p>Try it on your phone</p>
-        <span>sugobai.netlify.app</span>
-      </aside>
+      <!-- Presentation QR: a corner button that opens the code full view. Desktop frame only. -->
+      <button class="stage-qr-btn" id="qr-open" type="button" aria-label="Show QR code"><svg class="icon" aria-hidden="true"><use href="#i-qr-code"/></svg></button>
+      <dialog class="stage-qr" id="qr-view" aria-label="QR code for sugobai.netlify.app">
+        <button class="stage-qr-close" type="button" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <img src="assets/qr-sugobai.svg" alt="QR code for sugobai.netlify.app" width="600" height="600" />
+        <p>sugobai.netlify.app</p>
+      </dialog>
 
       <!-- Device wrapper: renders as a phone frame on desktop, and as a plain full-screen container elsewhere. -->
       <div class="device">

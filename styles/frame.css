@@ -14,7 +14,7 @@ body {
 }
 
 .stage { min-height: 100dvh; }
-.stage-qr { display: none; }
+.stage-qr-btn { display: none; }
 
 .device { height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--paper); }
 .device-screen { position: relative; height: 100%; overflow: hidden; }
@@ -36,18 +36,36 @@ body {
   body { overflow: hidden; }
   .stage { position: relative; height: 100dvh; min-height: 0; }
 
-  /* QR card beside the phone, for the live presentation. Only where there is room. */
-  @media (min-width: 1100px) {
-    .stage-qr {
-      position: absolute; top: 50%; left: calc(50% + 207px * var(--frame-scale, 1) + 56px);
-      display: grid; justify-items: center; gap: 4px; width: 232px; padding: 16px 16px 18px;
-      border-radius: var(--r-sheet); background: var(--surface); transform: translateY(-50%);
-      text-align: center;
-    }
-    .stage-qr img { width: 200px; height: 200px; margin-bottom: 8px; }
-    .stage-qr p { font: var(--t-heading); }
-    .stage-qr span { color: var(--ink-2); font: var(--t-small); }
+  /* Presentation QR: small corner button; the dialog shows the code as large as the screen allows. */
+  .stage-qr-btn {
+    position: fixed; z-index: 30; left: 24px; bottom: 24px;
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+    border: 1px solid var(--line-strong); border-radius: var(--r-pill);
+    background: var(--surface); color: var(--ink-2); cursor: pointer;
+    transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
   }
+  .stage-qr-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .stage-qr-btn .icon { width: 22px; height: 22px; }
+
+  .stage-qr {
+    max-width: none; max-height: none; margin: auto; padding: 0;
+    border: 0; background: none; text-align: center; color: #fff;
+  }
+  .stage-qr::backdrop { background: rgb(12 14 18 / 0.88); }
+  .stage-qr[open] { animation: qr-in 0.18s var(--ease); }
+  .stage-qr img {
+    display: block; width: min(78vh, 78vw); height: auto; aspect-ratio: 1;
+    border-radius: var(--r-sheet); background: #fff;
+  }
+  .stage-qr p { margin: 16px 0 0; font: var(--t-title); }
+  .stage-qr-close {
+    position: fixed; top: 20px; right: 20px;
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: var(--r-pill); background: rgb(255 255 255 / 0.14); color: #fff; cursor: pointer;
+  }
+  .stage-qr-close:hover { background: rgb(255 255 255 / 0.24); }
+  .stage-qr-close .icon { width: 22px; height: 22px; }
+  @keyframes qr-in { from { opacity: 0; transform: scale(0.96); } }
 
   .device {
     position: absolute; top: 50%; left: 50%;

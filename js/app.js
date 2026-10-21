@@ -211,6 +211,13 @@ const FORMS = {
   },
 };
 
+// Presentation QR: open full view; close on the X, a click outside the code, or Escape (native to <dialog>).
+const qrView = document.querySelector("#qr-view");
+document.querySelector("#qr-open").addEventListener("click", () => qrView.showModal());
+qrView.addEventListener("click", (event) => {
+  if (!event.target.closest("img, p")) qrView.close();
+});
+
 // Device frame: scale so the whole phone fits the viewport. Only has a visible effect in framed mode.
 function fitFrame() {
   const scale = Math.min(1, (innerHeight - 48) / 868, (innerWidth - 48) / 414);
