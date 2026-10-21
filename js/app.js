@@ -30,8 +30,15 @@ const state = {
       { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Mon" },
       { from: "mika", text: "Okay, go ahead. Thanks Rico.", time: "Mon" },
     ],
+    "client:joy": [
+      { from: "joy", text: "Hi Jun, are you free to check our outlets in Mabolo this Saturday?", time: "Yesterday" },
+    ],
+    "client:lena": [
+      { from: "jun", text: "Good afternoon po. I'm on my way, around 15 minutes.", time: "Mon" },
+      { from: "lena", text: "Okay po, the gate is open. Thank you!", time: "Mon" },
+    ],
   },
-  unread: ["jun"],
+  unread: ["jun", "client:joy"],
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
@@ -139,12 +146,7 @@ const ACTIONS = {
     render({ keepScroll: true });
     showToast(`You hired ${firstName(workerById(workerId).name)}`);
   },
-  offer: (el) => {
-    const job = state.jobs.find((j) => j.id === el.dataset.id);
-    job.offers.push(WORKER_SELF);
-    render({ keepScroll: true });
-    showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
-  },
+  offer: (el) => openSheet(offerSheet(state.jobs.find((j) => j.id === el.dataset.id))),
   "switch-role": () => {
     state.role = state.role === "worker" ? "homeowner" : "worker";
     go(state.role === "worker" ? "Jobs" : "Home");
@@ -186,6 +188,18 @@ const FORMS = {
     });
     closeSheet(); state.role = "homeowner"; go("Jobs");
     showToast("Job posted. Nearby pros can now send offers.");
+  },
+  offer: (data, form) => {
+    const job = state.jobs.find((j) => j.id === form.dataset.id);
+    const price = Number(data.get("price"));
+    job.offers.push(WORKER_SELF);
+    (job.terms ||= {})[WORKER_SELF] = { price, when: String(data.get("when")) };
+    const note = String(data.get("note") || "").trim();
+    const threadId = job.client === "mika" ? WORKER_SELF : `client:${job.client}`;
+    (state.threads[threadId] ||= []).push({ from: WORKER_SELF, text: `${note ? `${note} ` : ""}My offer: ${money(price)}, ${String(data.get("when")).toLowerCase()}.`, time: nowTime() });
+    closeSheet();
+    render({ keepScroll: true });
+    showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
   },
   message: (data, form) => {
     const text = String(data.get("text") || "").trim();

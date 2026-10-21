@@ -131,3 +131,12 @@
 .account-rows { margin-top: var(--s-5); }
 .row-icon .icon { color: var(--ink); }
 .saved-empty { display: flex; align-items: center; gap: 4px; color: var(--ink-2); font: var(--t-small); }
+
+/* ---------- Offers ---------- */
+.home-title + .stat-row { margin-top: var(--s-2); }
+.offer-price { font-weight: 600; color: var(--ink); }
+.offer-job { display: flex; gap: var(--s-3); margin-bottom: var(--s-4); padding: var(--s-3); border-radius: var(--r-card); background: var(--paper); }
+.offer-job .row-icon { color: var(--accent-ink); background: var(--accent-wash); }
+.offer-job b { display: block; font: var(--t-body-strong); }
+.offer-job span { color: var(--ink-2); font: var(--t-small); }
+.option span:only-child, .option input + span { min-height: 44px; align-content: center; }

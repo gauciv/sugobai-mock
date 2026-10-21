@@ -27,6 +27,7 @@ function rankedWorkers({ category = "", query = "", filters = {} } = {}) {
 
 /* ---------- Home ---------- */
 SCREENS.Home = () => {
+  if (state.role === "worker") return workerHome();
   const top = rankedWorkers().slice(0, 2);
   return `
     <header class="home-header">
@@ -129,10 +130,16 @@ function jobMeta(job, from) {
   return `<div class="job-meta"><span>${icon("map-pin", "icon-sm")}${where}</span><span>${icon("clock", "icon-sm")}${esc(job.posted)}</span></div>`;
 }
 
+function offerTerms(job, workerId) {
+  return job.terms?.[workerId] || { price: job.budget, when: "This week" };
+}
+const WHEN_TEXT = { Today: "can start today", Tomorrow: "can start tomorrow", "This week": "can start this week" };
+
 function offerRow(job, w) {
+  const t = offerTerms(job, w.id);
   return `<div class="offer">
     ${avatar(w, 40, { verified: w.idVerified })}
-    <div class="offer-body"><b>${esc(w.name)}</b>${trustLine(w, { jobs: false })}</div>
+    <div class="offer-body"><b>${esc(w.name)}</b>${trustLine(w, { jobs: false })}<span><b class="offer-price">${money(t.price)}</b>, ${WHEN_TEXT[t.when]}</span></div>
     <button class="btn btn-secondary btn-sm" type="button" data-action="hire" data-id="${job.id}:${w.id}">Hire</button>
   </div>`;
 }
@@ -171,18 +178,57 @@ function workerJobCard(job) {
     <div class="job-line">
       <span class="job-budget">${money(job.budget)}<small> budget</small></span>
       ${hired ? `<span class="badge badge-done">${icon("check-circle")}Hired</span>`
-        : offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent</span>`
+        : offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent, ${money(offerTerms(job, WORKER_SELF).price)}</span>`
         : `<button class="btn btn-secondary btn-sm" type="button" data-action="offer" data-id="${job.id}">Send offer</button>`}
     </div>
   </article>`;
 }
 
+function workerJobs() {
+  const self = workerById(WORKER_SELF);
+  return state.jobs
+    .filter((j) => (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
+    .sort((a, b) => distanceKm(self.area, a.area) - distanceKm(self.area, b.area));
+}
+
+// Worker-mode home: their standing, new jobs to offer on, and offers waiting on a reply.
+function workerHome() {
+  const self = workerById(WORKER_SELF);
+  const fresh = workerJobs().filter((j) => j.status === "Open" && !j.offers.includes(WORKER_SELF)).slice(0, 2);
+  const mine = state.jobs.filter((j) => j.offers.includes(WORKER_SELF) || j.hired === WORKER_SELF);
+  const threadFor = (job) => (job.client === "mika" ? WORKER_SELF : `client:${job.client}`);
+  return `
+    <header class="home-header">
+      <img class="home-mark" src="assets/sugobai-mark-96.webp" alt="SugoBai" width="36" height="36" />
+      <button class="area-button" type="button" data-action="area" aria-label="Change service area, currently ${esc(self.area)}">
+        ${icon("map-pin")}<span>Working in ${esc(self.area)}</span>${icon("caret-down", "icon-sm")}
+      </button>
+    </header>
+    <h1 class="home-title">Ready for work, ${esc(firstName(self.name))}?</h1>
+    ${statRow(self)}
+    <section class="section">
+      <div class="section-head"><h2>New jobs near you</h2><button class="btn btn-ghost" type="button" data-action="tab" data-tab="Jobs">See all</button></div>
+      ${fresh.length ? fresh.map(workerJobCard).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
+    </section>
+    ${mine.length ? `<section class="section">
+      <div class="section-head"><h2>Your offers</h2></div>
+      <div class="list">${mine.map((job) => {
+        const client = PEOPLE[job.client];
+        const hired = job.hired === WORKER_SELF;
+        return row({
+          lead: avatar(client, 44),
+          top: `<span class="row-top"><span class="row-title">${esc(job.title)}</span></span>`,
+          meta: hired ? `Hired by ${esc(firstName(client.name))}` : `${money(offerTerms(job, WORKER_SELF).price)} to ${esc(firstName(client.name))}, waiting for reply`,
+          end: chevron(), action: "open-thread", id: threadFor(job),
+        });
+      }).join("")}</div>
+    </section>` : ""}`;
+}
+
 SCREENS.Jobs = () => {
   if (state.role === "worker") {
     const self = workerById(WORKER_SELF);
-    const jobs = state.jobs
-      .filter((j) => (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
-      .sort((a, b) => distanceKm(self.area, a.area) - distanceKm(self.area, b.area));
+    const jobs = workerJobs();
     return `${pageHeader("Jobs near you", { sub: `Open requests around ${self.area}, closest first` })}
       ${jobs.length ? jobs.map(workerJobCard).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
   }
@@ -196,12 +242,18 @@ SCREENS.Jobs = () => {
 };
 
 /* ---------- Inbox and thread ---------- */
-// Threads are keyed by worker id. In worker mode, only the worker's own thread (with Mika) is visible.
+// Homeowner threads are keyed by worker id. In worker mode, Jun sees his thread with Mika
+// (keyed "jun") plus his threads with other clients (keyed "client:<id>").
 function visibleThreads() {
   const ids = Object.keys(state.threads).filter((id) => state.threads[id].length);
-  return state.role === "worker" ? ids.filter((id) => id === WORKER_SELF) : ids;
+  return state.role === "worker"
+    ? ids.filter((id) => id === WORKER_SELF || id.startsWith("client:"))
+    : ids.filter((id) => !id.startsWith("client:"));
 }
-const counterpart = (threadId) => (state.role === "worker" ? PEOPLE.mika : workerById(threadId));
+function counterpart(threadId) {
+  if (threadId.startsWith("client:")) return PEOPLE[threadId.slice(7)];
+  return state.role === "worker" ? PEOPLE.mika : workerById(threadId);
+}
 const myId = () => (state.role === "worker" ? WORKER_SELF : "mika");
 
 SCREENS.Inbox = () => {
@@ -218,7 +270,7 @@ SCREENS.Inbox = () => {
     const other = counterpart(id);
     const last = state.threads[id].at(-1);
     const isWorker = !!other.category;
-    const unread = state.role !== "worker" && state.unread.includes(id);
+    const unread = state.unread.includes(id) && last.from !== myId();
     return row({
       lead: avatar(other, 48, { verified: isWorker && other.idVerified }),
       top: `<span class="row-top"><span class="row-title">${esc(other.name)}</span><span class="row-end">${esc(last.time)}</span></span>`,
@@ -292,6 +344,22 @@ function areaSheet() {
     end: area === (state.role === "worker" ? workerById(WORKER_SELF).area : state.area) ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
     action: "set-area", id: area,
   })).join("")}</div>`);
+}
+
+function offerSheet(job) {
+  const client = PEOPLE[job.client];
+  const cat = categoryById(job.category);
+  const name = firstName(client.name);
+  return sheet("Send an offer", `<form data-form="offer" data-id="${job.id}">
+    <div class="offer-job">${rowIcon(cat.icon)}<div><b>${esc(job.title)}</b><span>${esc(name)} in ${esc(job.area)}, budget ${money(job.budget)}</span></div></div>
+    <label class="field">Your price (₱)<input name="price" type="number" inputmode="numeric" min="100" step="50" required value="${job.budget}" /></label>
+    <fieldset class="field" style="border:0;padding:0;margin:0 0 16px">
+      <legend style="padding:0;margin-bottom:6px">When can you start?</legend>
+      <div class="option-grid">${["Today", "Tomorrow", "This week"].map((w, i) => `<label class="option"><input type="radio" name="when" value="${w}" ${i === 1 ? "checked" : ""} /><span>${w}</span></label>`).join("")}</div>
+    </fieldset>
+    <label class="field">Message to ${esc(name)}<textarea name="note" rows="3" maxlength="300">Hi ${esc(name)}, I've done this kind of ${esc(cat.label.toLowerCase())} job many times. I'll bring my own tools.</textarea></label>
+    <button class="btn btn-primary btn-block" type="submit">${icon("paper-plane-right")}Send offer</button>
+  </form>`);
 }
 
 function postJobSheet() {

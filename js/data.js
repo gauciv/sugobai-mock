@@ -114,7 +114,8 @@ const REVIEW_TEXT = {
 };
 
 const SEED_JOBS = [
-  { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["jun", "ana"] },
+  { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["jun", "ana"],
+    terms: { jun: { price: 800, when: "Tomorrow" }, ana: { price: 700, when: "Today" } } },
   { id: "job-2", title: "Leaking pipe under the kitchen sink", category: "plumbing", details: "Slow drip under the sink, worse at night. Hoping someone can check it this week.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "1 hr ago", offers: [] },
   { id: "job-3", title: "General cleaning, 2-bedroom condo", category: "cleaning", details: "Kitchen, two bathrooms and floors. Supplies provided if needed.", area: "IT Park", budget: 1500, client: "paolo", status: "Open", posted: "2 hr ago", offers: [] },
   { id: "job-4", title: "Fix a loose cabinet hinge", category: "carpentry", details: "Upper kitchen cabinet door is hanging from one hinge.", area: "Banilad", budget: 400, client: "lena", status: "Open", posted: "3 hr ago", offers: [] },
