@@ -1,0 +1,20 @@
+/* Per-screen layout. Shared pieces are in components.css. */
+
+/* ---------- Home ---------- */
+.home-header { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding-top: var(--s-2); }
+.home-mark { width: 36px; height: 36px; object-fit: contain; }
+.area-button {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 var(--s-3);
+  border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--surface); font: var(--t-small-strong);
+}
+.home-title { margin: var(--s-5) 0 var(--s-4); font: var(--t-display); letter-spacing: -0.01em; max-width: 14em; }
+
+.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin-top: var(--s-4); }
+.category {
+  display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 76px; padding: var(--s-2);
+  border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); color: var(--ink); font: var(--t-small-strong);
+}
+.category .icon { color: var(--accent-ink); }
+.category:active { background: var(--paper); }
+
+.row-check { color: var(--trust); }

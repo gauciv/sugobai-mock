@@ -1,0 +1,74 @@
+// One function per screen. Screens only render content; the device wrapper and shell are in index.html.
+const SCREENS = {};
+
+function me() {
+  return state.role === "worker" ? workerById(WORKER_SELF) : PEOPLE.mika;
+}
+
+function searchForm(placeholder = "Try “leaking sink” or “aircon”") {
+  return `<form class="search" role="search" data-form="search">
+    ${icon("magnifying-glass")}
+    <input name="q" type="search" value="${esc(state.query)}" placeholder="${esc(placeholder)}" aria-label="Search pros and services" enterkeyhint="search" />
+  </form>`;
+}
+
+function rankedWorkers({ category = "", query = "", filters = {} } = {}) {
+  const q = query.toLowerCase();
+  return WORKERS.filter((w) => {
+    const cat = categoryById(w.category);
+    if (category && w.category !== category) return false;
+    if (filters.verified && !w.idVerified) return false;
+    if (filters.today && !w.available) return false;
+    if (filters.top && w.rating < 4.8) return false;
+    if (q && !`${w.name} ${cat.label} ${cat.trade} ${w.area} ${w.about} ${w.work.join(" ")}`.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+}
+
+/* ---------- Home ---------- */
+SCREENS.Home = () => {
+  const top = rankedWorkers().slice(0, 2);
+  return `
+    <header class="home-header">
+      <img class="home-mark" src="assets/sugobai-mark-96.webp" alt="SugoBai" width="36" height="36" />
+      <button class="area-button" type="button" data-action="area" aria-label="Change area, currently ${esc(state.area)}">
+        ${icon("map-pin")}<span>${esc(state.area)}, Cebu City</span>${icon("caret-down", "icon-sm")}
+      </button>
+    </header>
+    <h1 class="home-title">What do you need done, ${esc(firstName(me().name))}?</h1>
+    ${searchForm()}
+    <nav class="category-grid" aria-label="Services">
+      ${CATEGORIES.map((c) => `<button class="category" type="button" data-action="category" data-id="${c.id}">${icon(c.icon, "icon-lg")}<span>${c.label}</span></button>`).join("")}
+    </nav>
+    <section class="section">
+      <div class="section-head"><h2>Top-rated near you</h2><button class="btn btn-ghost" type="button" data-action="all-pros">See all</button></div>
+      ${top.map((w) => workerCard(w, { saved: state.saved.includes(w.id), from: state.area })).join("")}
+    </section>`;
+};
+
+/* ---------- Sheets ---------- */
+function areaSheet() {
+  return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({
+    lead: rowIcon("map-pin"),
+    title: esc(area),
+    meta: "Cebu City",
+    end: area === state.area ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
+    action: "set-area", id: area,
+  })).join("")}</div>`);
+}
+
+function postJobSheet() {
+  return sheet("Post a job", `<form data-form="post-job">
+    <label class="field">What do you need done?<input name="title" required maxlength="70" placeholder="Fix a leaking kitchen sink" /></label>
+    <fieldset class="field" style="border:0;padding:0;margin:0 0 16px">
+      <legend style="padding:0;margin-bottom:6px">Service</legend>
+      <div class="option-grid">${CATEGORIES.map((c, i) => `<label class="option"><input type="radio" name="category" value="${c.id}" ${i === 0 ? "checked" : ""} /><span>${icon(c.icon)}${c.label}</span></label>`).join("")}</div>
+    </fieldset>
+    <label class="field">Details<textarea name="details" rows="3" maxlength="400" placeholder="What's the problem, and when do you need it done?"></textarea></label>
+    <div class="field-row">
+      <label class="field">Budget (₱)<input name="budget" type="number" inputmode="numeric" min="100" step="50" required placeholder="600" /></label>
+      <label class="field">Area<select name="area">${Object.keys(AREAS).map((a) => `<option ${a === state.area ? "selected" : ""}>${esc(a)}</option>`).join("")}</select></label>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Post job</button>
+  </form>`);
+}
