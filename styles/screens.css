@@ -60,10 +60,11 @@
 .review-stars { display: flex; gap: 2px; margin: var(--s-2) 0 6px; }
 .review p { font: var(--t-body); }
 
+.app-scroll[data-view="Worker"] { display: flex; flex-direction: column; padding-bottom: 0; }
 .action-bar {
-  position: sticky; bottom: 0; z-index: 5;
+  position: sticky; bottom: 0; z-index: 5; margin-top: auto;
   display: grid; grid-template-columns: auto 1fr; gap: var(--s-2);
-  margin: 0 calc(-1 * var(--gutter)); padding: var(--s-3) var(--gutter) calc(var(--s-3) + var(--safe-bottom));
+  margin-inline: calc(-1 * var(--gutter)); padding: var(--s-3) var(--gutter) calc(var(--s-3) + var(--safe-bottom));
   background: var(--surface); box-shadow: var(--shadow-float);
 }
 

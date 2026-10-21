@@ -1,6 +1,6 @@
 # SugoBai UI redesign: audit and plan
 
-Status: **approved with changes (2026-10-21)**. The changes below override the rest of this document wherever they conflict.
+Status: **built (2026-10-21)**; after screenshots in `design-audit/after/`. Approved with changes: The changes below override the rest of this document wherever they conflict.
 
 ## Decisions after review
 - **Compact, calm UI is the priority.** As a user, not a lot should be going on. So:
