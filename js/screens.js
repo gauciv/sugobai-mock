@@ -195,6 +195,59 @@ SCREENS.Jobs = () => {
     ${mine.map(homeownerJobCard).join("")}`;
 };
 
+/* ---------- Inbox and thread ---------- */
+// Threads are keyed by worker id. In worker mode, only the worker's own thread (with Mika) is visible.
+function visibleThreads() {
+  const ids = Object.keys(state.threads).filter((id) => state.threads[id].length);
+  return state.role === "worker" ? ids.filter((id) => id === WORKER_SELF) : ids;
+}
+const counterpart = (threadId) => (state.role === "worker" ? PEOPLE.mika : workerById(threadId));
+const myId = () => (state.role === "worker" ? WORKER_SELF : "mika");
+
+SCREENS.Inbox = () => {
+  const ids = visibleThreads();
+  if (!ids.length) {
+    return `${pageHeader("Inbox")}${emptyState({
+      icon: "chat-circle",
+      title: "No messages yet",
+      text: state.role === "worker" ? "Clients who message you will show up here." : "Message a pro from their profile to ask about price or schedule.",
+      action: state.role === "worker" ? "" : `<button class="btn btn-secondary" type="button" data-action="all-pros">Find a pro</button>`,
+    })}`;
+  }
+  return `${pageHeader("Inbox")}<div class="list">${ids.map((id) => {
+    const other = counterpart(id);
+    const last = state.threads[id].at(-1);
+    const isWorker = !!other.category;
+    const unread = state.role !== "worker" && state.unread.includes(id);
+    return row({
+      lead: avatar(other, 48, { verified: isWorker && other.idVerified }),
+      top: `<span class="row-top"><span class="row-title">${esc(other.name)}</span><span class="row-end">${esc(last.time)}</span></span>`,
+      meta: `${unread ? `<span class="unread-dot"><span class="visually-hidden">New: </span></span>` : ""}${last.from === myId() ? "You: " : ""}${esc(last.text)}`,
+      action: "open-thread", id,
+    }).replace('class="row"', `class="row${unread ? " is-unread" : ""}"`);
+  }).join("")}</div>`;
+};
+
+SCREENS.Thread = () => {
+  const id = state.threadId;
+  const other = counterpart(id);
+  const isWorker = !!other.category;
+  const messages = state.threads[id] || [];
+  const title = `<span class="thread-title">${avatar(other, 32)}<span><b>${esc(other.name)}</b>${isWorker ? `<span class="${other.idVerified ? "trust-verified" : "trust-pending"}">${other.idVerified ? "ID verified" : "ID pending"}</span>` : `<span>${esc(other.area)}</span>`}</span></span>`;
+  const end = isWorker ? `<button class="btn btn-ghost" type="button" data-action="open-worker" data-id="${other.id}">Profile</button>` : "";
+  return `
+    ${navHeader({ title, end })}
+    <div class="thread">
+      ${messages.length ? "" : `<p class="thread-hint">Ask ${esc(firstName(other.name))} about price, schedule or what to prepare.</p>`}
+      ${messages.map((m) => `<div class="bubble ${m.from === myId() ? "mine" : ""}"><p>${esc(m.text)}</p><time>${esc(m.time)}</time></div>`).join("")}
+    </div>
+    <form class="composer" data-form="message">
+      <button class="icon-btn" type="button" aria-label="Attach a photo" data-action="attach">${icon("camera")}</button>
+      <input name="text" autocomplete="off" maxlength="300" placeholder="Message ${esc(firstName(other.name))}" aria-label="Message" />
+      <button class="icon-btn composer-send" type="submit" aria-label="Send">${icon("paper-plane-right")}</button>
+    </form>`;
+};
+
 /* ---------- Sheets ---------- */
 function areaSheet() {
   return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({

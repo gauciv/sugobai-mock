@@ -22,7 +22,16 @@ const state = {
       { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
       { from: "jun", text: "Hi Mika! Yes, I can come Thursday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
     ],
+    marites: [
+      { from: "mika", text: "Thank you, Ate Marites! The condo looks great.", time: "Yesterday" },
+      { from: "marites", text: "Salamat po! See you again next month.", time: "Yesterday" },
+    ],
+    rico: [
+      { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Mon" },
+      { from: "mika", text: "Okay, go ahead. Thanks Rico.", time: "Mon" },
+    ],
   },
+  unread: ["jun"],
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
@@ -106,7 +115,8 @@ const ACTIONS = {
     if (!state.threads[id]) state.threads[id] = [];
     go("Thread", { threadId: id });
   },
-  "open-thread": (el) => go("Thread", { threadId: el.dataset.id }),
+  attach: () => showToast("Photo sharing isn't available in this preview"),
+  "open-thread": (el) => { state.unread = state.unread.filter((id) => id !== el.dataset.id); go("Thread", { threadId: el.dataset.id }); },
   area: () => openSheet(areaSheet()),
   "set-area": (el) => { state.area = el.dataset.id; closeSheet(); render(); showToast(`Showing pros near ${state.area}`); },
   "post-job": () => openSheet(postJobSheet()),

@@ -94,3 +94,30 @@
 .offer-body .trust { gap: 2px 10px; }
 .offer-link { padding: 0; }
 .offer-link > .icon { color: var(--ink-2); }
+
+/* ---------- Inbox and thread ---------- */
+.thread-title { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.thread-title > span:last-child { display: grid; min-width: 0; }
+.thread-title b { font: var(--t-body-strong); overflow: hidden; text-overflow: ellipsis; }
+.thread-title span span { font: var(--t-caption); color: var(--ink-2); }
+.thread-title .trust-verified { color: var(--trust); }
+
+.app-scroll[data-view="Thread"] { display: flex; flex-direction: column; padding-bottom: 0; }
+.thread { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--s-2); padding: var(--s-4) 0; }
+.thread-hint { align-self: center; max-width: 28ch; color: var(--ink-2); font: var(--t-small); text-align: center; }
+.bubble { align-self: flex-start; max-width: 80%; padding: 10px 14px; border-radius: 18px 18px 18px 6px; background: var(--surface); border: 1px solid var(--line); }
+.bubble.mine { align-self: flex-end; border-radius: 18px 18px 6px 18px; background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.bubble p { font: var(--t-body); }
+.bubble time { display: block; margin-top: 2px; color: var(--ink-3); font: var(--t-caption); font-weight: 400; }
+.bubble.mine time { color: #c9ced6; text-align: right; }
+
+.composer {
+  position: sticky; bottom: 0; display: flex; align-items: center; gap: var(--s-1);
+  margin: 0 calc(-1 * var(--gutter)); padding: var(--s-2) var(--s-2) calc(var(--s-2) + var(--safe-bottom));
+  background: var(--surface); box-shadow: var(--shadow-float);
+}
+.composer input { flex: 1; min-width: 0; height: 44px; padding: 0 var(--s-4); border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--paper); font: var(--t-body); font-size: 16px; }
+.composer input:focus { outline: none; border-color: var(--ink); }
+.composer-send { color: var(--accent-ink); }
+.row.is-unread .row-meta { color: var(--ink); font-weight: 600; }
+.unread-dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--accent); vertical-align: 1px; }
