@@ -21,7 +21,7 @@
 
   /* Type */
   --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Atkinson Hyperlegible Next", "Segoe UI", Roboto, sans-serif;
+  --font-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --t-display: 700 26px/32px var(--font-display);
   --t-title: 700 20px/26px var(--font-display);
   --t-heading: 600 17px/22px var(--font-display);

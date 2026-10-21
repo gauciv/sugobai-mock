@@ -14,6 +14,7 @@ Status: **approved with changes (2026-10-21)**. The changes below override the r
 - **Fonts load from Google Fonts.** The venue Wi-Fi is reliable.
 - **"All services" screen dropped.** All six categories live on Home.
 - WIP baseline committed as `2e1a504`.
+- **Type changed to a single family: Schibsted Grotesk (400–700).** Atkinson Hyperlegible Next has a slashed zero with no plain-zero alternate (checked ss01–ss04, salt, cv01, zero). That made every price, date and rating read technical (₱6ØØ, 2Ø26). One family also keeps the UI calmer.
 
 Before screenshots: `design-audit/before/` (19 states × 390×844 and 1440×900, plus `-bottom` captures where the screen scrolls). Captured from the current working tree, including the uncommitted changes to `app.js`, `index.html` and `styles.css`.
 
