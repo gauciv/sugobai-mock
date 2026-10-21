@@ -1,0 +1,61 @@
+/* SugoBai design tokens. See design-audit/PLAN.md §4 and "Decisions after review". */
+:root {
+  color-scheme: light;
+
+  /* Color */
+  --paper: #f3f2ef;        /* app background, warm concrete */
+  --paper-deep: #e7e5e0;   /* presentation backdrop, tablet gutters */
+  --surface: #ffffff;
+  --line: #e2dfd9;
+  --line-strong: #cfcbc3;
+  --ink: #1e242c;
+  --ink-2: #48505b;
+  --ink-3: #5f6772;        /* lowest text color allowed */
+  --accent: #f7841a;       /* hard-hat orange; fill only, use ink text on it */
+  --accent-press: #e5730c;
+  --accent-ink: #a34a00;   /* orange as text */
+  --accent-wash: #fdebd8;
+  --trust: #1e6b47;        /* semantic: verified, available */
+  --trust-wash: #e3f1e8;
+  --scrim: rgb(30 36 44 / 0.45);
+
+  /* Type */
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", "Segoe UI", Roboto, sans-serif;
+  --t-display: 700 26px/32px var(--font-display);
+  --t-title: 700 20px/26px var(--font-display);
+  --t-heading: 600 17px/22px var(--font-display);
+  --t-body: 400 15px/22px var(--font-body);
+  --t-body-strong: 600 15px/22px var(--font-body);
+  --t-small: 400 14px/20px var(--font-body);
+  --t-small-strong: 600 14px/20px var(--font-body);
+  --t-caption: 600 13px/16px var(--font-body);
+
+  /* Space (4px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --gutter: 16px;
+
+  /* Radius by hierarchy */
+  --r-chip: 6px;
+  --r-control: 10px;
+  --r-card: 14px;
+  --r-sheet: 20px;
+  --r-pill: 999px;
+
+  /* Elevation: only for things that float */
+  --shadow-float: 0 -1px 0 var(--line), 0 -8px 24px rgb(30 36 44 / 0.06);
+  --shadow-sheet: 0 -12px 40px rgb(30 36 44 / 0.18);
+
+  /* Safe areas: real insets by default; the device frame overrides these */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 60px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
