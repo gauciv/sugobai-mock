@@ -71,6 +71,56 @@ SCREENS.Pros = () => {
       })}`;
 };
 
+/* ---------- Worker profile ---------- */
+SCREENS.Worker = () => {
+  const w = workerById(state.workerId);
+  const cat = categoryById(w.category);
+  const own = state.role === "worker" && w.id === WORKER_SELF;
+  const saved = state.saved.includes(w.id);
+  const tabs = ["About", "Work", "Reviews"];
+
+  let body;
+  if (state.workerTab === "Work") {
+    body = `<div class="work-grid">${w.work.map((title, i) => `<figure><img src="${workPhoto(w, i)}" alt="" loading="lazy" /><figcaption>${esc(title)}</figcaption></figure>`).join("")}</div>`;
+  } else if (state.workerTab === "Reviews") {
+    body = `<ul class="reviews">${(REVIEW_TEXT[w.id] || []).map(([pid, date, text]) => {
+      const p = PEOPLE[pid];
+      return `<li class="review">
+        <div class="review-head">${avatar(p, 36)}<div><b>${esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div></div>
+        <div class="review-stars" aria-label="5 out of 5 stars">${icon("star-fill", "icon-sm").repeat(5)}</div>
+        <p>${esc(text)}</p>
+      </li>`;
+    }).join("")}</ul>`;
+  } else {
+    const cred = w.credential
+      ? `<div class="credential">${rowIcon("certificate")}<div><b>${esc(w.credential.title)}</b><span>${esc(w.credential.issuer)}, ${w.credential.year}</span></div></div>`
+      : "";
+    body = `<p class="about">${esc(w.about)}</p>${cred}
+      <dl class="facts">
+        <div><dt>${icon("clock", "icon-sm")}Next available</dt><dd>${w.available ? "Today" : "Tomorrow"}</dd></div>
+        <div><dt>${icon("calendar-blank", "icon-sm")}On SugoBai since</dt><dd>${w.since}</dd></div>
+      </dl>`;
+  }
+
+  return `
+    ${navHeader({ end: own ? "" : saveButton(w, saved) })}
+    <div class="profile-cover"><img src="${workPhoto(w, 0)}" alt="${esc(w.work[0])}" /></div>
+    <section class="profile-head">
+      ${avatar(w, 84, { verified: w.idVerified })}
+      <h1>${esc(w.name)}</h1>
+      <p>${esc(cat.trade)} in ${esc(w.area)}, ${distanceKm(state.area, w.area)} km away</p>
+    </section>
+    ${statRow(w)}
+    <div class="segmented" role="tablist" aria-label="Profile sections">
+      ${tabs.map((t) => `<button type="button" role="tab" aria-selected="${state.workerTab === t}" data-action="worker-tab" data-id="${t}">${t}</button>`).join("")}
+    </div>
+    <div class="profile-body" role="tabpanel">${body}</div>
+    ${own ? "" : `<div class="action-bar">
+      <button class="btn btn-secondary" type="button" data-action="message" data-id="${w.id}">${icon("chat-circle")}Message</button>
+      <button class="btn btn-primary" type="button" data-action="request" data-id="${w.id}">Request, ${w.from ? "from " : ""}${money(w.rate)}</button>
+    </div>`}`;
+};
+
 /* ---------- Sheets ---------- */
 function areaSheet() {
   return sheet("Your area", `<div class="list">${Object.keys(AREAS).map((area) => row({
