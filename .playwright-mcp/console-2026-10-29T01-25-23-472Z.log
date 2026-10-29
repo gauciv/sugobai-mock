@@ -1,0 +1,6 @@
+[   13807ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/lorna-1.webp:0
+[   13807ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/lorna-2.webp:0
+[   13807ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/lorna-3.webp:0
+[   13810ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/arvin-1.webp:0
+[   13811ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/arvin-2.webp:0
+[   13811ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8765/assets/work/arvin-3.webp:0

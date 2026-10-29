@@ -75,6 +75,16 @@ function workerCard(worker, { saved = false, from } = {}) {
   </article>`;
 }
 
+// Placeholder cards shown while results load.
+function skeletonCards(count) {
+  const card = `<div class="skeleton-card" aria-hidden="true">
+    <div class="skeleton-head"><span class="skeleton skeleton-circle"></span><span class="skeleton-lines"><span class="skeleton" style="width:60%"></span><span class="skeleton" style="width:40%"></span></span></div>
+    <span class="skeleton skeleton-block"></span>
+    <span class="skeleton" style="width:50%"></span>
+  </div>`;
+  return `<div class="skeleton-list" role="status"><span class="visually-hidden">Loading</span>${card.repeat(count)}</div>`;
+}
+
 function pageHeader(title, { sub = "", end = "" } = {}) {
   return `<header class="page-header"><div class="page-header-row"><h1>${esc(title)}</h1>${end}</div>${sub ? `<p>${esc(sub)}</p>` : ""}</header>`;
 }

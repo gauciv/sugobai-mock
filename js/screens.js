@@ -1,9 +1,8 @@
 // One function per screen. Screens only render content; the device wrapper and shell are in index.html.
 const SCREENS = {};
 
-function me() {
-  return state.role === "worker" ? workerById(WORKER_SELF) : PEOPLE.mika;
-}
+// One account in both modes.
+const me = () => workerById(WORKER_SELF);
 
 function searchForm(placeholder = "Try “leaking sink” or “aircon”") {
   return `<form class="search" role="search" data-form="search">
@@ -12,9 +11,11 @@ function searchForm(placeholder = "Try “leaking sink” or “aircon”") {
   </form>`;
 }
 
+// Closest first, then best rated. The account holder never shows up in their own results.
 function rankedWorkers({ category = "", query = "", filters = {} } = {}) {
   const q = query.toLowerCase();
   return WORKERS.filter((w) => {
+    if (w.id === WORKER_SELF) return false;
     const cat = categoryById(w.category);
     if (category && w.category !== category) return false;
     if (filters.verified && !w.idVerified) return false;
@@ -22,7 +23,7 @@ function rankedWorkers({ category = "", query = "", filters = {} } = {}) {
     if (filters.top && w.rating < 4.8) return false;
     if (q && !`${w.name} ${cat.label} ${cat.trade} ${w.area} ${w.about} ${w.work.join(" ")}`.toLowerCase().includes(q)) return false;
     return true;
-  }).sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+  }).sort((a, b) => distanceKm(state.area, a.area) - distanceKm(state.area, b.area) || b.rating - a.rating || b.reviews - a.reviews);
 }
 
 /* ---------- Home ---------- */
@@ -42,8 +43,8 @@ SCREENS.Home = () => {
       ${CATEGORIES.map((c) => `<button class="category" type="button" data-action="category" data-id="${c.id}">${icon(c.icon, "icon-lg")}<span>${c.label}</span></button>`).join("")}
     </nav>
     <section class="section">
-      <div class="section-head"><h2>Top-rated near you</h2><button class="btn btn-ghost" type="button" data-action="all-pros">See all</button></div>
-      ${top.map((w) => workerCard(w, { saved: state.saved.includes(w.id), from: state.area })).join("")}
+      <div class="section-head"><h2>Pros near you</h2><button class="btn btn-ghost" type="button" data-action="all-pros">See all</button></div>
+      ${state.loading ? skeletonCards(2) : top.map((w) => workerCard(w, { saved: state.saved.includes(w.id), from: state.area })).join("")}
     </section>`;
 };
 
@@ -62,7 +63,7 @@ SCREENS.Pros = () => {
       ${chip("verified", "ID verified", "seal-check")}${chip("today", "Available today")}${chip("top", "4.8+ rating", "star")}
     </div>
     <p class="pros-count">${count}</p>
-    ${list.length
+    ${state.loading ? skeletonCards(3) : list.length
       ? list.map((w) => workerCard(w, { saved: state.saved.includes(w.id), from: state.area })).join("")
       : emptyState({
         icon: "magnifying-glass",
@@ -82,10 +83,11 @@ SCREENS.Worker = () => {
 
   let body;
   if (state.workerTab === "Work") {
-    body = `<div class="work-grid">${w.work.map((title, i) => `<figure><img src="${workPhoto(w, i)}" alt="" loading="lazy" /><figcaption>${esc(title)}</figcaption></figure>`).join("")}</div>`;
+    body = w.work.length ? `<div class="work-grid">${w.work.map((title, i) => `<figure><img src="${workPhoto(w, i)}" alt="" loading="lazy" /><figcaption>${esc(title)}</figcaption></figure>`).join("")}</div>`
+      : `<p class="saved-empty">No work photos yet.</p>`;
   } else if (state.workerTab === "Reviews") {
     body = `<ul class="reviews">${(REVIEW_TEXT[w.id] || []).map(([pid, date, text]) => {
-      const p = PEOPLE[pid];
+      const p = personById(pid);
       return `<li class="review">
         <div class="review-head">${avatar(p, 36)}<div><b>${esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div></div>
         <div class="review-stars" aria-label="5 out of 5 stars">${icon("star-fill", "icon-sm").repeat(5)}</div>
@@ -149,7 +151,7 @@ function homeownerJobCard(job) {
   const hired = job.hired && workerById(job.hired);
   let foot;
   if (hired) {
-    foot = `<button class="offer offer-link" type="button" data-action="open-thread" data-id="${hired.id}">
+    foot = `<button class="offer offer-link" type="button" data-action="open-thread" data-id="pro:${hired.id}">
       ${avatar(hired, 40, { verified: hired.idVerified })}
       <div class="offer-body"><b>${esc(hired.name)}</b><span>${job.status === "Requested" ? "Waiting for them to confirm" : "Hired. Message to set a schedule."}</span></div>
       ${icon("chat-circle")}
@@ -160,7 +162,9 @@ function homeownerJobCard(job) {
     foot = `<p class="job-foot-label is-muted">No offers yet. Nearby pros usually reply within an hour.</p>`;
   }
   return `<article class="job-card">
-    <div class="job-head">${rowIcon(cat.icon)}<div class="job-title"><h3>${esc(job.title)}</h3>${jobMeta(job)}</div></div>
+    <div class="job-head">${rowIcon(cat.icon)}<div class="job-title"><h3>${esc(job.title)}</h3>${jobMeta(job)}</div>
+      <button class="icon-btn job-delete" type="button" data-action="delete-job" data-id="${job.id}" aria-label="Delete ${esc(job.title)}">${icon("trash")}</button>
+    </div>
     <div class="job-line"><span class="badge ${STATUS_BADGE[job.status]}">${esc(job.status)}</span><span class="job-budget">${money(job.budget)}<small> budget</small></span></div>
     <div class="job-foot">${foot}</div>
   </article>`;
@@ -187,7 +191,7 @@ function workerJobCard(job) {
 function workerJobs() {
   const self = workerById(WORKER_SELF);
   return state.jobs
-    .filter((j) => (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
+    .filter((j) => j.category === self.category && (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
     .sort((a, b) => distanceKm(self.area, a.area) - distanceKm(self.area, b.area));
 }
 
@@ -196,7 +200,6 @@ function workerHome() {
   const self = workerById(WORKER_SELF);
   const fresh = workerJobs().filter((j) => j.status === "Open" && !j.offers.includes(WORKER_SELF)).slice(0, 2);
   const mine = state.jobs.filter((j) => j.offers.includes(WORKER_SELF) || j.hired === WORKER_SELF);
-  const threadFor = (job) => (job.client === "mika" ? WORKER_SELF : `client:${job.client}`);
   return `
     <header class="home-header">
       <img class="home-mark" src="assets/sugobai-mark-96.webp" alt="SugoBai" width="36" height="36" />
@@ -208,7 +211,7 @@ function workerHome() {
     ${statRow(self)}
     <section class="section">
       <div class="section-head"><h2>New jobs near you</h2><button class="btn btn-ghost" type="button" data-action="tab" data-tab="Jobs">See all</button></div>
-      ${fresh.length ? fresh.map(workerJobCard).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
+      ${state.loading ? skeletonCards(2) : fresh.length ? fresh.map(workerJobCard).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
     </section>
     ${mine.length ? `<section class="section">
       <div class="section-head"><h2>Your offers</h2></div>
@@ -219,7 +222,7 @@ function workerHome() {
           lead: avatar(client, 44),
           top: `<span class="row-top"><span class="row-title">${esc(job.title)}</span></span>`,
           meta: hired ? `Hired by ${esc(firstName(client.name))}` : `${money(offerTerms(job, WORKER_SELF).price)} to ${esc(firstName(client.name))}, waiting for reply`,
-          end: chevron(), action: "open-thread", id: threadFor(job),
+          end: chevron(), action: "open-thread", id: `client:${job.client}`,
         });
       }).join("")}</div>
     </section>` : ""}`;
@@ -229,10 +232,10 @@ SCREENS.Jobs = () => {
   if (state.role === "worker") {
     const self = workerById(WORKER_SELF);
     const jobs = workerJobs();
-    return `${pageHeader("Jobs near you", { sub: `Open requests around ${self.area}, closest first` })}
-      ${jobs.length ? jobs.map(workerJobCard).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
+    return `${pageHeader(`${categoryById(self.category).label} jobs near you`, { sub: `Open requests around ${self.area}, closest first` })}
+      ${state.loading ? skeletonCards(3) : jobs.length ? jobs.map(workerJobCard).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
   }
-  const mine = state.jobs.filter((j) => j.client === "mika");
+  const mine = state.jobs.filter((j) => j.client === WORKER_SELF);
   if (!mine.length) {
     return `${pageHeader("Your jobs")}
       ${emptyState({ icon: "briefcase", title: "No jobs yet", text: "Describe what you need and nearby pros will send you offers.", action: `<button class="btn btn-primary" type="button" data-action="post-job">${icon("plus")}Post a job</button>` })}`;
@@ -242,19 +245,13 @@ SCREENS.Jobs = () => {
 };
 
 /* ---------- Inbox and thread ---------- */
-// Homeowner threads are keyed by worker id. In worker mode, Jun sees his thread with Mika
-// (keyed "jun") plus his threads with other clients (keyed "client:<id>").
+// Jun's threads as a homeowner are keyed "pro:<workerId>"; as a worker, "client:<personId>".
 function visibleThreads() {
-  const ids = Object.keys(state.threads).filter((id) => state.threads[id].length);
-  return state.role === "worker"
-    ? ids.filter((id) => id === WORKER_SELF || id.startsWith("client:"))
-    : ids.filter((id) => !id.startsWith("client:"));
+  const prefix = state.role === "worker" ? "client:" : "pro:";
+  return Object.keys(state.threads).filter((id) => id.startsWith(prefix) && state.threads[id].length);
 }
-function counterpart(threadId) {
-  if (threadId.startsWith("client:")) return PEOPLE[threadId.slice(7)];
-  return state.role === "worker" ? PEOPLE.mika : workerById(threadId);
-}
-const myId = () => (state.role === "worker" ? WORKER_SELF : "mika");
+const counterpart = (threadId) => personById(threadId.split(":")[1]);
+const myId = () => WORKER_SELF;
 
 SCREENS.Inbox = () => {
   const ids = visibleThreads();
@@ -307,7 +304,7 @@ SCREENS.Profile = () => {
   const head = worker
     ? `<div class="account">${avatar(user, 64, { verified: user.idVerified })}<div><h2>${esc(user.name)}</h2><p>${esc(categoryById(user.category).trade)} in ${esc(user.area)}</p></div></div>
        <div class="account-trust">${trustLine(user)}</div>`
-    : `<div class="account">${avatar(user, 64)}<div><h2>${esc(user.name)}</h2><p>Homeowner in ${esc(state.area)}</p></div></div>`;
+    : `<div class="account">${avatar(user, 64, { verified: user.idVerified })}<div><h2>${esc(user.name)}</h2><p>Homeowner in ${esc(state.area)}</p></div></div>`;
 
   const rows = worker
     ? [
@@ -344,6 +341,18 @@ function areaSheet() {
     end: area === (state.role === "worker" ? workerById(WORKER_SELF).area : state.area) ? `<span class="row-end row-check">${icon("check-circle")}</span>` : "",
     action: "set-area", id: area,
   })).join("")}</div>`);
+}
+
+function deleteJobSheet(job) {
+  const n = job.offers.length;
+  const hired = job.hired && workerById(job.hired);
+  const effect = hired ? ` ${esc(firstName(hired.name))} will be told the job is cancelled.`
+    : n ? ` The ${n === 1 ? "offer" : `${n} offers`} on it will be declined.` : "";
+  return sheet("Delete this job?", `<p class="sheet-text">“${esc(job.title)}” will be removed from SugoBai.${effect}</p>
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" type="button" data-action="close-sheet">Keep job</button>
+      <button class="btn btn-danger" type="button" data-action="confirm-delete" data-id="${job.id}">${icon("trash")}Delete</button>
+    </div>`);
 }
 
 function offerSheet(job) {

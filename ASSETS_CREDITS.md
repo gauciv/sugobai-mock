@@ -1,6 +1,6 @@
 # Asset credits
 
-All photos are from [Pexels](https://www.pexels.com) under the [Pexels License](https://www.pexels.com/license/): free to use, no attribution required, modification allowed. They're credited here anyway. Downloaded 2026-10-21, cropped and converted to WebP (avatars 256×256, work photos 960×720).
+All photos are from [Pexels](https://www.pexels.com) under the [Pexels License](https://www.pexels.com/license/): free to use, no attribution required, modification allowed. They're credited here anyway. Downloaded 2026-10-21 (later additions 2026-10-29), cropped and converted to WebP (avatars 256×256, work photos 960×720).
 
 People in these photos are real people photographed by the listed photographers. None are AI-generated; each was reviewed by eye. Names in the app are fictional and don't refer to the people pictured.
 
@@ -21,6 +21,20 @@ Photographer is the Pexels username where the photo page exposed one.
 | `assets/people/joy.webp` | Cheerful woman with short hair smiling outdoors in Manila | [38336130](https://www.pexels.com/photo/smiling-woman-posing-outdoors-in-manila-38336130/) | @kimymoto |
 | `assets/people/paolo.webp` | Asian man smiling leaning on wooden wall | [10838409](https://www.pexels.com/photo/man-in-gray-shirt-smiling-10838409/) | @rainpexels |
 | `assets/people/lena.webp` | Mature woman in floral blouse outdoors | [38660512](https://www.pexels.com/photo/portrait-of-mature-woman-in-natural-setting-38660512/) | @dongling-huang |
+| `assets/people/dodong.webp` | Older man in green shirt, outdoors | [36298152](https://www.pexels.com/photo/36298152/) | — |
+| `assets/people/grace.webp` | Smiling woman in cream top | [38336188](https://www.pexels.com/photo/38336188/) | — |
+| `assets/people/ramil.webp` | Smiling man in white shirt by outrigger boats | [20849280](https://www.pexels.com/photo/20849280/) | — |
+| `assets/people/cherry.webp` | Young woman in denim jacket, smiling | [6132300](https://www.pexels.com/photo/6132300/) | — |
+| `assets/people/nonoy.webp` | Smiling worker in hard hat and yellow shirt | [16633751](https://www.pexels.com/photo/16633751/) | — |
+| `assets/people/arvin.webp` | Young man with headband among pine trees | [8086943](https://www.pexels.com/photo/8086943/) | — |
+| `assets/people/lorna.webp` | Smiling woman in head cloth and apron at a market | [36046087](https://www.pexels.com/photo/36046087/) | — |
+| `assets/people/edgar.webp` | Older man in polo shirt at sunset | [32975143](https://www.pexels.com/photo/32975143/) | — |
+| `assets/people/jessa.webp` | Young woman in brown dress outdoors | [8242941](https://www.pexels.com/photo/8242941/) | — |
+| `assets/people/carlo.webp` | Man in gray shirt making a finger heart | [31465755](https://www.pexels.com/photo/31465755/) | — |
+| `assets/people/bea.webp` | Smiling woman in striped shirt, Cebu City | [30871364](https://www.pexels.com/photo/30871364/) | — |
+| `assets/people/nestor.webp` | Older man in blue polo shirt | [13607164](https://www.pexels.com/photo/13607164/) | — |
+| `assets/people/rhea.webp` | Smiling woman with red lipstick | [29341356](https://www.pexels.com/photo/29341356/) | — |
+| `assets/people/arnel.webp` | Smiling man in yellow T-shirt | [4584483](https://www.pexels.com/photo/4584483/) | — |
 
 ## Past-work photos
 
@@ -47,6 +61,33 @@ Photographer is the Pexels username where the photo page exposed one.
 | `assets/work/kent-1.webp` | Delivery rider on motorcycle with box | [27299954](https://www.pexels.com/photo/a-man-on-a-motorcycle-with-a-box-on-the-back-27299954/) | @kenzero14 |
 | `assets/work/kent-2.webp` | Reusable grocery bag at doorstep | [7363085](https://www.pexels.com/photo/a-bag-with-groceries-on-the-floor-7363085/) | — |
 | `assets/work/kent-3.webp` | Man delivering grocery bag to customer | [13432287](https://www.pexels.com/photo/handing-food-out-to-customer-in-close-up-13432287/) | — |
+| `assets/work/dodong-1.webp` | Door edge planed to close | [5691546](https://www.pexels.com/photo/5691546/) | — |
+| `assets/work/dodong-2.webp` | Trim boards cut to size | [5691537](https://www.pexels.com/photo/5691537/) | — |
+| `assets/work/dodong-3.webp` | Old window frames restored | [5691504](https://www.pexels.com/photo/5691504/) | — |
+| `assets/work/grace-1.webp` | Bathroom vanity wiped down | [4239032](https://www.pexels.com/photo/4239032/) | — |
+| `assets/work/grace-2.webp` | Mirror and lamp dusted | [4239031](https://www.pexels.com/photo/4239031/) | — |
+| `assets/work/grace-3.webp` | Kitchen cabinets cleaned | [9462229](https://www.pexels.com/photo/9462229/) | — |
+| `assets/work/ramil-1.webp` | New water lines roughed in | [5691486](https://www.pexels.com/photo/5691486/) | — |
+| `assets/work/ramil-2.webp` | Shower pipe stub-out | [5691483](https://www.pexels.com/photo/5691483/) | — |
+| `assets/work/ramil-3.webp` | Towel warmer hooked up | [6436776](https://www.pexels.com/photo/6436776/) | — |
+| `assets/work/cherry-1.webp` | White wall, second coat | [7218011](https://www.pexels.com/photo/7218011/) | — |
+| `assets/work/cherry-2.webp` | Room masked before painting | [7218003](https://www.pexels.com/photo/7218003/) | — |
+| `assets/work/cherry-3.webp` | Sage green accent wall | [5691592](https://www.pexels.com/photo/5691592/) | — |
+| `assets/work/nonoy-1.webp` | Ceiling repainted | [5691610](https://www.pexels.com/photo/5691610/) | — |
+| `assets/work/nonoy-2.webp` | Charcoal feature wall | [5691611](https://www.pexels.com/photo/5691611/) | — |
+| `assets/work/nonoy-3.webp` | Gray wall, rolled smooth | [1669754](https://www.pexels.com/photo/1669754/) | — |
+| `assets/work/arvin-1.webp` | Outlet strip wired | [5691588](https://www.pexels.com/photo/5691588/) | — |
+| `assets/work/arvin-2.webp` | Four-gang outlet installed | [5691602](https://www.pexels.com/photo/5691602/) | — |
+| `assets/work/arvin-3.webp` | Hallway ceiling light | [5691560](https://www.pexels.com/photo/5691560/) | — |
+| `assets/work/lorna-1.webp` | Toilet deep-cleaned | [4239068](https://www.pexels.com/photo/4239068/) | — |
+| `assets/work/lorna-2.webp` | Bathroom sink scrubbed | [4239110](https://www.pexels.com/photo/4239110/) | — |
+| `assets/work/lorna-3.webp` | Dishes washed by hand | [9462196](https://www.pexels.com/photo/9462196/) | — |
+| `assets/work/edgar-1.webp` | Shower and toilet installed | [6436779](https://www.pexels.com/photo/6436779/) | — |
+| `assets/work/edgar-2.webp` | Water line on a finished wall | [5691485](https://www.pexels.com/photo/5691485/) | — |
+| `assets/work/edgar-3.webp` | Bathroom vanity hookup | [6436777](https://www.pexels.com/photo/6436777/) | — |
+| `assets/work/jessa-1.webp` | Errands by motorcycle | [11357581](https://www.pexels.com/photo/11357581/) | — |
+| `assets/work/jessa-2.webp` | Groceries ready for drop-off | [7363077](https://www.pexels.com/photo/7363077/) | — |
+| `assets/work/jessa-3.webp` | Parcel left at the door | [7363092](https://www.pexels.com/photo/7363092/) | — |
 
 ## Icons
 

@@ -6,7 +6,8 @@ const toastEl = document.querySelector("#toast");
 
 const state = {
   role: "homeowner",          // or "worker"
-  area: "Lahug",
+  area: "Talamban",           // homeowner mode: where Jun lives
+  loading: false,             // brief skeleton while results for a new area load
   view: "Home",               // Home | Pros | Worker | Jobs | Inbox | Thread | Profile
   stack: [],                  // previous views, for back
   category: "",               // Pros: category filter
@@ -17,18 +18,23 @@ const state = {
   threadId: null,
   saved: ["marites", "rico"],
   jobs: SEED_JOBS.map((job) => ({ ...job, offers: [...job.offers] })),
+  // "pro:<workerId>": Jun hiring a pro. "client:<personId>": Jun working for a homeowner.
   threads: {
-    jun: [
-      { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
-      { from: "jun", text: "Hi Mika! Yes, I can come Thursday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
+    "pro:nonoy": [
+      { from: "jun", text: "Hi Nonoy, can you look at our gate this week? It's rusting at the bottom.", time: "10:05 AM" },
+      { from: "nonoy", text: "Yes po, I can come tomorrow morning. I'll scrape and prime first so it lasts.", time: "10:21 AM" },
     ],
-    marites: [
-      { from: "mika", text: "Thank you, Ate Marites! The condo looks great.", time: "Yesterday" },
+    "pro:marites": [
+      { from: "jun", text: "Thank you, Ate Marites! The house looks great.", time: "Yesterday" },
       { from: "marites", text: "Salamat po! See you again next month.", time: "Yesterday" },
     ],
-    rico: [
+    "pro:rico": [
       { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Mon" },
-      { from: "mika", text: "Okay, go ahead. Thanks Rico.", time: "Mon" },
+      { from: "jun", text: "Okay, go ahead. Thanks Rico.", time: "Mon" },
+    ],
+    "client:mika": [
+      { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
+      { from: "jun", text: "Hi Mika! Yes, I can come Thursday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
     ],
     "client:joy": [
       { from: "joy", text: "Hi Jun, are you free to check our outlets in Mabolo this Saturday?", time: "Yesterday" },
@@ -38,7 +44,7 @@ const state = {
       { from: "lena", text: "Okay po, the gate is open. Thank you!", time: "Mon" },
     ],
   },
-  unread: ["jun", "client:joy"],
+  unread: ["pro:nonoy", "client:joy"],
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
@@ -84,6 +90,7 @@ function render({ keepScroll = false } = {}) {
     else tab.removeAttribute("aria-current");
   });
   scrollEl.scrollTop = keepScroll ? top : 0;
+  scrollEl.querySelectorAll("img").forEach((img) => { if (img.complete && img.naturalWidth) markLoaded(img); });
 }
 
 function openSheet(html) {
@@ -104,6 +111,33 @@ function toggleSaved(id) {
   render({ keepScroll: true });
 }
 
+// Same account, other mode: cover the screen with a short handoff so the change reads as one person switching hats.
+function switchRole() {
+  if (appEl.querySelector(".role-switch")) return;
+  const toWorker = state.role !== "worker";
+  const overlay = document.createElement("div");
+  overlay.className = "role-switch";
+  overlay.setAttribute("role", "status");
+  overlay.innerHTML = `${avatar(me(), 72)}
+    <p><b>${toWorker ? "Worker mode" : "Homeowner mode"}</b><span>${toWorker ? "Find jobs and get hired near you" : "Book pros for your home"}</span></p>
+    <span class="role-switch-bar"></span>`;
+  closeSheet();
+  toastEl.classList.remove("visible");
+  appEl.append(overlay);
+  setTimeout(() => {
+    state.role = toWorker ? "worker" : "homeowner";
+    go("Home");
+  }, 450);
+  setTimeout(() => overlay.classList.add("is-leaving"), 1100);
+  setTimeout(() => overlay.remove(), 1400);
+}
+
+// Add a message and move its thread to the top of the inbox.
+function sendMessage(threadId, text) {
+  const { [threadId]: thread = [], ...rest } = state.threads;
+  state.threads = { [threadId]: [...thread, { from: WORKER_SELF, text, time: nowTime() }], ...rest };
+}
+
 const nowTime = () => new Date().toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
 
 const ACTIONS = {
@@ -118,7 +152,7 @@ const ACTIONS = {
   "worker-tab": (el) => { state.workerTab = el.dataset.id; render({ keepScroll: true }); },
   save: (el) => toggleSaved(el.dataset.id),
   message: (el) => {
-    const id = el.dataset.id;
+    const id = `pro:${el.dataset.id}`;
     if (!state.threads[id]) state.threads[id] = [];
     go("Thread", { threadId: id });
   },
@@ -127,15 +161,23 @@ const ACTIONS = {
   area: () => openSheet(areaSheet()),
   "set-area": (el) => {
     closeSheet();
-    if (state.role === "worker") { workerById(WORKER_SELF).area = el.dataset.id; render(); showToast(`Service area set to ${el.dataset.id}`); return; }
-    state.area = el.dataset.id; render(); showToast(`Showing pros near ${state.area}`);
+    if (state.role === "worker") workerById(WORKER_SELF).area = el.dataset.id;
+    else state.area = el.dataset.id;
+    // Show skeletons briefly, as a real app would while fetching results for the new area.
+    state.loading = true;
+    render();
+    setTimeout(() => {
+      state.loading = false;
+      render({ keepScroll: true });
+      showToast(state.role === "worker" ? `Showing jobs near ${el.dataset.id}` : `Showing pros near ${el.dataset.id}`);
+    }, 700);
   },
   "post-job": () => openSheet(postJobSheet()),
   request: (el) => {
     const worker = workerById(el.dataset.id);
     const cat = categoryById(worker.category);
-    state.jobs.unshift({ id: `job-${Date.now()}`, title: `${cat.label} request for ${firstName(worker.name)}`, category: worker.category, details: "", area: state.area, budget: worker.rate, client: "mika", status: "Requested", posted: "Just now", offers: [], hired: worker.id });
-    (state.threads[worker.id] ||= []).push({ from: "mika", text: `Hi ${firstName(worker.name)}, I sent you a request for ${cat.label.toLowerCase()} work in ${state.area}.`, time: nowTime() });
+    state.jobs.unshift({ id: `job-${Date.now()}`, title: `${cat.label} request for ${firstName(worker.name)}`, category: worker.category, details: "", area: state.area, budget: worker.rate, client: WORKER_SELF, status: "Requested", posted: "Just now", offers: [], hired: worker.id });
+    sendMessage(`pro:${worker.id}`, `Hi ${firstName(worker.name)}, I sent you a request for ${cat.label.toLowerCase()} work in ${state.area}.`);
     go("Jobs");
     showToast(`Request sent to ${firstName(worker.name)}`);
   },
@@ -146,12 +188,15 @@ const ACTIONS = {
     render({ keepScroll: true });
     showToast(`You hired ${firstName(workerById(workerId).name)}`);
   },
-  offer: (el) => openSheet(offerSheet(state.jobs.find((j) => j.id === el.dataset.id))),
-  "switch-role": () => {
-    state.role = state.role === "worker" ? "homeowner" : "worker";
-    go(state.role === "worker" ? "Jobs" : "Home");
-    showToast(state.role === "worker" ? "Switched to worker mode" : "Switched to homeowner mode");
+  "delete-job": (el) => openSheet(deleteJobSheet(state.jobs.find((j) => j.id === el.dataset.id))),
+  "confirm-delete": (el) => {
+    state.jobs = state.jobs.filter((j) => j.id !== el.dataset.id);
+    closeSheet();
+    render({ keepScroll: true });
+    showToast("Job deleted");
   },
+  offer: (el) => openSheet(offerSheet(state.jobs.find((j) => j.id === el.dataset.id))),
+  "switch-role": switchRole,
   "my-profile": () => go("Worker", { workerId: WORKER_SELF, workerTab: "About" }),
 };
 
@@ -184,7 +229,7 @@ const FORMS = {
     state.jobs.unshift({
       id: `job-${Date.now()}`, title: String(data.get("title")).trim(), category: String(data.get("category")),
       details: String(data.get("details") || "").trim(), area: String(data.get("area")), budget: Number(data.get("budget")),
-      client: "mika", status: "Open", posted: "Just now", offers: [],
+      client: WORKER_SELF, status: "Open", posted: "Just now", offers: [],
     });
     closeSheet(); state.role = "homeowner"; go("Jobs");
     showToast("Job posted. Nearby pros can now send offers.");
@@ -195,8 +240,7 @@ const FORMS = {
     job.offers.push(WORKER_SELF);
     (job.terms ||= {})[WORKER_SELF] = { price, when: String(data.get("when")) };
     const note = String(data.get("note") || "").trim();
-    const threadId = job.client === "mika" ? WORKER_SELF : `client:${job.client}`;
-    (state.threads[threadId] ||= []).push({ from: WORKER_SELF, text: `${note ? `${note} ` : ""}My offer: ${money(price)}, ${String(data.get("when")).toLowerCase()}.`, time: nowTime() });
+    sendMessage(`client:${job.client}`, `${note ? `${note} ` : ""}My offer: ${money(price)}, ${String(data.get("when")).toLowerCase()}.`);
     closeSheet();
     render({ keepScroll: true });
     showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
@@ -204,7 +248,7 @@ const FORMS = {
   message: (data, form) => {
     const text = String(data.get("text") || "").trim();
     if (!text) return;
-    state.threads[state.threadId].push({ from: state.role === "worker" ? WORKER_SELF : "mika", text, time: nowTime() });
+    sendMessage(state.threadId, text);
     render();
     scrollEl.scrollTop = scrollEl.scrollHeight;
     scrollEl.querySelector("input[name=text]")?.focus();
@@ -217,6 +261,11 @@ document.querySelector("#qr-open").addEventListener("click", () => qrView.showMo
 qrView.addEventListener("click", (event) => {
   if (!event.target.closest("img, p")) qrView.close();
 });
+
+// Image skeletons: images shimmer until they load (or fail), then stop.
+const markLoaded = (img) => img.classList.add("is-loaded");
+document.addEventListener("load", (event) => { if (event.target.tagName === "IMG") markLoaded(event.target); }, true);
+document.addEventListener("error", (event) => { if (event.target.tagName === "IMG") markLoaded(event.target); }, true);
 
 // Device frame: scale so the whole phone fits the viewport. Only has a visible effect in framed mode.
 function fitFrame() {

@@ -5,6 +5,8 @@ const AREAS = {
   Banilad: [10.3430, 123.9120],
   "IT Park": [10.3300, 123.9060],
   Talamban: [10.3655, 123.9170],
+  Guadalupe: [10.3195, 123.8870],
+  "Capitol Site": [10.3150, 123.8925],
 };
 
 const CATEGORIES = [
@@ -16,13 +18,18 @@ const CATEGORIES = [
   { id: "errands", label: "Errands", trade: "Errand runner", plural: "Errand runners", icon: "moped" },
 ];
 
-// People who post jobs, write reviews, or use the app as a homeowner.
-const PEOPLE = {
-  mika: { id: "mika", name: "Mika Ramos", area: "Lahug", photo: "assets/people/mika.webp" },
-  joy: { id: "joy", name: "Joy Rosales", area: "Mabolo", photo: "assets/people/joy.webp" },
-  paolo: { id: "paolo", name: "Paolo Diaz", area: "IT Park", photo: "assets/people/paolo.webp" },
-  lena: { id: "lena", name: "Lena Mercado", area: "Banilad", photo: "assets/people/lena.webp" },
-};
+// Homeowners who post jobs and write reviews.
+const PEOPLE = Object.fromEntries([
+  ["mika", "Mika Ramos", "Lahug"],
+  ["joy", "Joy Rosales", "Mabolo"],
+  ["paolo", "Paolo Diaz", "IT Park"],
+  ["lena", "Lena Mercado", "Banilad"],
+  ["carlo", "Carlo Mendoza", "Guadalupe"],
+  ["bea", "Bea Villanueva", "Capitol Site"],
+  ["nestor", "Nestor Gabuya", "Talamban"],
+  ["rhea", "Rhea Uy", "Banilad"],
+  ["arnel", "Arnel Sy", "Lahug"],
+].map(([id, name, area]) => [id, { id, name, area, photo: `assets/people/${id}.webp` }]));
 
 const WORKERS = [
   {
@@ -81,6 +88,78 @@ const WORKERS = [
     about: "Motorcycle errands around Cebu City: groceries, bills payment, parcel drop-off and pick-up. Within 5 km.",
     work: ["Errands by motorcycle", "Groceries left at the door", "Pharmacy pick-up handoff"],
   },
+  {
+    id: "dodong", name: "Dodong Villaflor", category: "carpentry", area: "Lahug",
+    rating: 4.8, reviews: 27, jobs: 35, rate: 800, unit: "day", from: false, available: true,
+    idVerified: true, since: 2023,
+    credential: { title: "Carpentry NC II", issuer: "TESDA", year: 2009 },
+    about: "Doors that won't close, sagging cabinets, termite-damaged trim. Thirty years of carpentry around Lahug and Camputhaw.",
+    work: ["Door edge planed to close", "Trim boards cut to size", "Old window frames restored"],
+  },
+  {
+    id: "grace", name: "Grace Sanchez", category: "cleaning", area: "Lahug",
+    rating: 4.9, reviews: 22, jobs: 29, rate: 850, unit: "half day", from: false, available: true,
+    idVerified: true, since: 2024,
+    credential: null,
+    about: "Weekly and one-time cleaning for apartments and boarding houses. I do laundry and ironing too if you need it.",
+    work: ["Bathroom vanity wiped down", "Mirror and lamp dusted", "Kitchen cabinets cleaned"],
+  },
+  {
+    id: "ramil", name: "Ramil Ouano", category: "plumbing", area: "Mabolo",
+    rating: 4.7, reviews: 14, jobs: 20, rate: 500, unit: "visit", from: true, available: true,
+    idVerified: true, since: 2024,
+    credential: { title: "Plumbing NC II", issuer: "TESDA", year: 2019 },
+    about: "Clogged drains, low water pressure and water heater hookups. I bring common parts so most fixes are done in one visit.",
+    work: ["New water lines roughed in", "Shower pipe stub-out", "Towel warmer hooked up"],
+  },
+  {
+    id: "cherry", name: "Cherry Lim", category: "painting", area: "Banilad",
+    rating: 4.9, reviews: 11, jobs: 13, rate: 700, unit: "day", from: false, available: false,
+    idVerified: true, since: 2025,
+    credential: null,
+    about: "Room repaints and accent walls. I help you pick colors and I cover every floor and fixture before I open a can.",
+    work: ["White wall, second coat", "Room masked before painting", "Sage green accent wall"],
+  },
+  {
+    id: "nonoy", name: "Nonoy Cabrera", category: "painting", area: "Talamban",
+    rating: 4.8, reviews: 24, jobs: 31, rate: 750, unit: "day", from: false, available: true,
+    idVerified: true, since: 2023,
+    credential: null,
+    about: "Gates, grills, walls and roofs. Rust is scraped and primed before any topcoat, so the paint lasts through the rainy season.",
+    work: ["Ceiling repainted", "Charcoal feature wall", "Gray wall, rolled smooth"],
+  },
+  {
+    id: "arvin", name: "Arvin Tan", category: "electrical", area: "Guadalupe",
+    rating: 4.7, reviews: 9, jobs: 12, rate: 550, unit: "visit", from: true, available: true,
+    idVerified: false, since: 2025,
+    credential: { title: "Electrical Installation and Maintenance NC II", issuer: "TESDA", year: 2024 },
+    about: "Lights, outlets and aircon circuits. Newly certified, careful, and happy to explain what I'm doing.",
+    work: ["Outlet strip wired", "Four-gang outlet installed", "Hallway ceiling light"],
+  },
+  {
+    id: "lorna", name: "Lorna Dela Cruz", category: "cleaning", area: "Guadalupe",
+    rating: 5.0, reviews: 47, jobs: 66, rate: 800, unit: "half day", from: false, available: false,
+    idVerified: true, since: 2022,
+    credential: null,
+    about: "Thorough house cleaning, kitchens especially. Twenty years keeping homes in Guadalupe and Capitol Site spotless.",
+    work: ["Toilet deep-cleaned", "Bathroom sink scrubbed", "Dishes washed by hand"],
+  },
+  {
+    id: "edgar", name: "Edgar Rosal", category: "plumbing", area: "Capitol Site",
+    rating: 4.9, reviews: 35, jobs: 48, rate: 600, unit: "visit", from: true, available: true,
+    idVerified: true, since: 2022,
+    credential: { title: "Plumbing NC II", issuer: "TESDA", year: 2011 },
+    about: "Leaks, toilets, sinks and new water lines for small renovations. I quote before I start and clean up after.",
+    work: ["Shower and toilet installed", "Water line on a finished wall", "Bathroom vanity hookup"],
+  },
+  {
+    id: "jessa", name: "Jessa Uy", category: "errands", area: "Capitol Site",
+    rating: 4.8, reviews: 52, jobs: 90, rate: 150, unit: "errand", from: true, available: true,
+    idVerified: true, since: 2024,
+    credential: null,
+    about: "Groceries, pharmacy runs, bills and parcels by motorcycle. I send photos of receipts as I go.",
+    work: ["Errands by motorcycle", "Groceries ready for drop-off", "Parcel left at the door"],
+  },
 ];
 
 const REVIEW_TEXT = {
@@ -111,17 +190,65 @@ const REVIEW_TEXT = {
     ["lena", "Oct 2026", "Did my grocery list exactly and sent the receipt right away."],
     ["joy", "Oct 2026", "Paid our bills at the mall and was back in 40 minutes."],
   ],
+  dodong: [
+    ["arnel", "Oct 2026", "Rehung our warped bedroom door. It closes properly for the first time in years."],
+    ["mika", "Aug 2026", "Built a shoe rack that fits the space exactly. Fair price for the wood."],
+  ],
+  grace: [
+    ["arnel", "Sep 2026", "Fast and very tidy. She noticed things I always forget, like the fan blades."],
+  ],
+  ramil: [
+    ["joy", "Oct 2026", "Unclogged our kitchen drain in 20 minutes and showed me what caused it."],
+  ],
+  cherry: [
+    ["rhea", "Sep 2026", "Our daughter's room looks lovely. No paint on the floor anywhere."],
+  ],
+  nonoy: [
+    ["nestor", "Oct 2026", "Scraped and repainted our whole gate. Still no rust after the typhoon."],
+    ["lena", "Jul 2026", "Repainted our roof before the rains. Neat edges and he cleaned up well."],
+  ],
+  arvin: [
+    ["carlo", "Oct 2026", "Added an outlet for our aircon and labeled the breaker. Polite and careful."],
+  ],
+  lorna: [
+    ["bea", "Oct 2026", "Best cleaning we've ever had. The kitchen tiles look new."],
+    ["carlo", "Aug 2026", "Very trustworthy. We leave her the keys now."],
+  ],
+  edgar: [
+    ["bea", "Sep 2026", "Fixed the running toilet and a leaking faucet in one visit."],
+    ["carlo", "Jul 2026", "Explained the quote clearly and finished on time."],
+  ],
+  jessa: [
+    ["bea", "Oct 2026", "Got all the medicine on my list and sent the receipt right away."],
+    ["paolo", "Sep 2026", "Picked up my parcel from the courier and delivered it within the hour."],
+  ],
 };
 
 const SEED_JOBS = [
+  // Posted by the account holder (Jun, as a homeowner).
+  { id: "job-gate", title: "Repaint the front gate and grills", category: "painting", details: "Steel gate and window grills, some rust. Paint already bought.", area: "Talamban", budget: 1800, client: "jun", status: "Open", posted: "40 min ago", offers: ["nonoy", "cherry"],
+    terms: { nonoy: { price: 1800, when: "Tomorrow" }, cherry: { price: 1600, when: "This week" } } },
+  { id: "job-clean", title: "Deep clean before the fiesta", category: "cleaning", details: "Two-storey house, three bedrooms. Kitchen and bathrooms most important.", area: "Talamban", budget: 1500, client: "jun", status: "Open", posted: "3 hr ago", offers: [] },
+  // Electrical jobs Jun can send offers on, one or two per area.
   { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["jun", "ana"],
     terms: { jun: { price: 800, when: "Tomorrow" }, ana: { price: 700, when: "Today" } } },
+  { id: "job-5", title: "Breaker keeps tripping at night", category: "electrical", details: "Main breaker trips when the aircon and rice cooker run together.", area: "Talamban", budget: 700, client: "nestor", status: "Open", posted: "15 min ago", offers: [] },
+  { id: "job-6", title: "Add two outlets in the bedroom", category: "electrical", details: "Need outlets on the wall by the desk. Concrete wall, surface wiring is fine.", area: "Guadalupe", budget: 900, client: "carlo", status: "Open", posted: "50 min ago", offers: ["arvin"] },
+  { id: "job-11", title: "Check outlets before a party", category: "electrical", details: "Two outlets spark when plugged in. Want them checked before Saturday.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "Yesterday", offers: [] },
+  { id: "job-12", title: "Wall lights for the front porch", category: "electrical", details: "Two outdoor wall lights, already bought. Switch should be inside the door.", area: "Capitol Site", budget: 1200, client: "bea", status: "Open", posted: "2 hr ago", offers: [] },
+  { id: "job-13", title: "Aircon outlet is loose", category: "electrical", details: "The plug wobbles and the outlet gets warm. Condo unit, 12th floor.", area: "IT Park", budget: 500, client: "paolo", status: "Open", posted: "4 hr ago", offers: [] },
+  { id: "job-14", title: "Replace a dead light switch", category: "electrical", details: "Hallway switch stopped working. Bulb is fine.", area: "Banilad", budget: 400, client: "rhea", status: "Open", posted: "5 hr ago", offers: [] },
+  // Other trades, so the marketplace isn't only electrical.
   { id: "job-2", title: "Leaking pipe under the kitchen sink", category: "plumbing", details: "Slow drip under the sink, worse at night. Hoping someone can check it this week.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "1 hr ago", offers: [] },
   { id: "job-3", title: "General cleaning, 2-bedroom condo", category: "cleaning", details: "Kitchen, two bathrooms and floors. Supplies provided if needed.", area: "IT Park", budget: 1500, client: "paolo", status: "Open", posted: "2 hr ago", offers: [] },
   { id: "job-4", title: "Fix a loose cabinet hinge", category: "carpentry", details: "Upper kitchen cabinet door is hanging from one hinge.", area: "Banilad", budget: 400, client: "lena", status: "Open", posted: "3 hr ago", offers: [] },
+  { id: "job-7", title: "Pick up medicine and groceries", category: "errands", details: "Pharmacy then the supermarket on Escario. List will be sent in chat.", area: "Capitol Site", budget: 250, client: "bea", status: "Open", posted: "10 min ago", offers: ["jessa"] },
+  { id: "job-9", title: "Paint one bedroom wall", category: "painting", details: "Accent wall, about 3 by 4 meters. Color is picked out.", area: "Lahug", budget: 1200, client: "arnel", status: "Open", posted: "6 hr ago", offers: [] },
 ];
 
-const WORKER_SELF = "jun"; // the account used in worker mode
+// The signed-in account. Jun is one person with two modes: he hires pros for his own
+// home in Talamban (homeowner mode) and takes electrical jobs (worker mode).
+const WORKER_SELF = "jun";
 
 const categoryById = (id) => CATEGORIES.find((c) => c.id === id);
 const workerById = (id) => WORKERS.find((w) => w.id === id);
