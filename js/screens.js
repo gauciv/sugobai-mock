@@ -77,7 +77,7 @@ SCREENS.Pros = () => {
 SCREENS.Worker = () => {
   const w = workerById(state.workerId);
   const cat = categoryById(w.category);
-  const own = state.role === "worker" && w.id === WORKER_SELF;
+  const own = w.id === WORKER_SELF;
   const saved = state.saved.includes(w.id);
   const tabs = ["About", "Work", "Reviews"];
 
