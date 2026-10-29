@@ -60,12 +60,28 @@
 .review-stars { display: flex; gap: 2px; margin: var(--s-2) 0 6px; }
 .review p { font: var(--t-body); }
 
-.app-scroll[data-view="Worker"] { display: flex; flex-direction: column; padding-bottom: 0; }
+button.review-head { width: 100%; padding: 0; border: 0; background: none; color: inherit; text-align: left; }
+
+.app-scroll[data-view="Worker"], .app-scroll[data-view="Client"] { display: flex; flex-direction: column; padding-bottom: 0; }
+.app-scroll[data-view="Client"] .reviews { padding-bottom: var(--s-6); }
+.app-scroll[data-view="Client"] .review p { margin-top: var(--s-2); }
 .action-bar {
   position: sticky; bottom: 0; z-index: 5; margin-top: auto;
   display: grid; grid-template-columns: auto 1fr; gap: var(--s-2);
   margin-inline: calc(-1 * var(--gutter)); padding: var(--s-3) var(--gutter) calc(var(--s-3) + var(--safe-bottom));
   background: var(--surface); box-shadow: var(--shadow-float);
+}
+
+.action-bar-single { grid-template-columns: 1fr; }
+
+/* ---------- Homeowner profile ---------- */
+/* Left-aligned and photo-free, so it never reads as a pro's storefront. */
+.client-head { display: flex; align-items: center; gap: var(--s-4); margin: var(--s-2) 0 var(--s-4); }
+.client-head h1 { margin-top: 6px; font: var(--t-title); }
+.client-head p { color: var(--ink-2); font: var(--t-small); }
+.client-role {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border-radius: var(--r-chip); background: var(--accent-wash); color: var(--accent-ink); font: var(--t-caption);
 }
 
 /* ---------- Jobs ---------- */
@@ -77,13 +93,14 @@
 .job-delete { margin: -10px -10px 0 0; color: var(--ink-2); }
 .job-title h3, .job-card-title { font: var(--t-heading); }
 .job-card-title { margin-top: var(--s-3); }
+.job-card-title:first-child { margin-top: 0; }
 .job-details { margin-top: 4px; color: var(--ink-2); font: var(--t-small); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .job-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; color: var(--ink-2); font: var(--t-small); }
 .job-meta span { display: inline-flex; align-items: center; gap: 4px; }
 .job-line { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-top: var(--s-3); }
 .job-budget { font: var(--t-heading); }
 .job-budget small { color: var(--ink-2); font: var(--t-small); }
-.job-poster { display: flex; align-items: center; gap: var(--s-2); font: var(--t-small); }
+.job-poster { display: flex; align-items: center; gap: var(--s-2); min-height: 44px; margin: -6px 0; padding: 0; border: 0; background: none; color: inherit; font: var(--t-small); text-align: left; }
 .job-poster b { font-weight: 600; }
 
 .job-foot { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line); }

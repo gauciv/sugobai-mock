@@ -18,18 +18,53 @@ const CATEGORIES = [
   { id: "errands", label: "Errands", trade: "Errand runner", plural: "Errand runners", icon: "moped" },
 ];
 
-// Homeowners who post jobs and write reviews.
+// Homeowners who post jobs and write reviews. Rating is what pros gave them after a job.
 const PEOPLE = Object.fromEntries([
-  ["mika", "Mika Ramos", "Lahug"],
-  ["joy", "Joy Rosales", "Mabolo"],
-  ["paolo", "Paolo Diaz", "IT Park"],
-  ["lena", "Lena Mercado", "Banilad"],
-  ["carlo", "Carlo Mendoza", "Guadalupe"],
-  ["bea", "Bea Villanueva", "Capitol Site"],
-  ["nestor", "Nestor Gabuya", "Talamban"],
-  ["rhea", "Rhea Uy", "Banilad"],
-  ["arnel", "Arnel Sy", "Lahug"],
-].map(([id, name, area]) => [id, { id, name, area, photo: `assets/people/${id}.webp` }]));
+  ["mika", "Mika Ramos", "Lahug", 2023, true, 4.9, 9],
+  ["joy", "Joy Rosales", "Mabolo", 2022, true, 5.0, 14],
+  ["paolo", "Paolo Diaz", "IT Park", 2024, true, 4.8, 7],
+  ["lena", "Lena Mercado", "Banilad", 2023, true, 4.9, 11],
+  ["carlo", "Carlo Mendoza", "Guadalupe", 2024, false, 4.7, 5],
+  ["bea", "Bea Villanueva", "Capitol Site", 2022, true, 5.0, 16],
+  ["nestor", "Nestor Gabuya", "Talamban", 2025, true, 4.8, 2],
+  ["rhea", "Rhea Uy", "Banilad", 2025, false, 4.9, 3],
+  ["arnel", "Arnel Sy", "Lahug", 2024, true, 4.8, 4],
+].map(([id, name, area, since, idVerified, rating, hires]) => [id, { id, name, area, since, idVerified, rating, hires, photo: `assets/people/${id}.webp` }]));
+
+// What pros wrote about a homeowner after a job: [workerId, date, text].
+const CLIENT_REVIEWS = {
+  mika: [
+    ["rico", "Oct 2026", "Clear about the problem and had the area under the sink cleared before I came."],
+    ["tomas", "Jun 2026", "Paid right after the job and offered merienda. Easy to work with."],
+  ],
+  joy: [
+    ["jun", "Sep 2026", "Fan was already unboxed and the breaker was labeled. Paid on the spot."],
+    ["ramil", "Oct 2026", "Sent photos of the drain beforehand, so I brought the right parts."],
+  ],
+  paolo: [
+    ["marites", "Oct 2026", "Left the condo key with the guard as agreed. Very organized."],
+  ],
+  lena: [
+    ["jun", "Aug 2026", "Gate was open when I arrived and she was home to show me the problem."],
+    ["nonoy", "Jul 2026", "Bought the paint ahead of time and paid in full the same day."],
+  ],
+  carlo: [
+    ["arvin", "Oct 2026", "Knew exactly where he wanted the outlet. Quick to reply in chat."],
+  ],
+  bea: [
+    ["lorna", "Oct 2026", "Kind and respectful. She trusts me with the house keys now."],
+    ["jessa", "Oct 2026", "Clear grocery list and paid back the receipt total right away."],
+  ],
+  nestor: [
+    ["nonoy", "Oct 2026", "Showed me all the rusty spots first. Paid the agreed price, no haggling."],
+  ],
+  rhea: [
+    ["cherry", "Sep 2026", "Had the color picked and the furniture moved before I arrived."],
+  ],
+  arnel: [
+    ["dodong", "Oct 2026", "Explained what he wanted with photos. Paid on time."],
+  ],
+};
 
 const WORKERS = [
   {

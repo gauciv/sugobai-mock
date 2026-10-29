@@ -8,13 +8,14 @@ const state = {
   role: "homeowner",          // or "worker"
   area: "Talamban",           // homeowner mode: where Jun lives
   loading: false,             // brief skeleton while results for a new area load
-  view: "Home",               // Home | Pros | Worker | Jobs | Inbox | Thread | Profile
+  view: "Home",               // Home | Pros | Worker | Client | Jobs | Inbox | Thread | Profile
   stack: [],                  // previous views, for back
   category: "",               // Pros: category filter
   query: "",                  // Pros: search text
   filters: { verified: false, today: false, top: false },
   workerId: null,
   workerTab: "About",
+  clientId: null,
   threadId: null,
   saved: ["marites", "rico"],
   jobs: SEED_JOBS.map((job) => ({ ...job, offers: [...job.offers] })),
@@ -48,8 +49,8 @@ const state = {
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
-const PUSHED = ["Pros", "Worker", "Thread"];       // screens with a back button
-const NO_TABBAR = ["Worker", "Thread"];           // full-screen detail screens
+const PUSHED = ["Pros", "Worker", "Client", "Thread"];   // screens with a back button
+const NO_TABBAR = ["Worker", "Client", "Thread"];       // full-screen detail screens
 
 let toastTimer;
 function showToast(message) {
@@ -60,7 +61,7 @@ function showToast(message) {
 }
 
 function go(view, patch = {}) {
-  if (PUSHED.includes(view)) state.stack.push({ view: state.view, workerTab: state.workerTab, workerId: state.workerId });
+  if (PUSHED.includes(view)) state.stack.push({ view: state.view, workerTab: state.workerTab, workerId: state.workerId, clientId: state.clientId, threadId: state.threadId });
   else state.stack = [];
   Object.assign(state, patch, { view });
   render();
@@ -149,10 +150,16 @@ const ACTIONS = {
   "clear-filters": () => { state.filters = { verified: false, today: false, top: false }; render(); },
   filter: (el) => { const key = el.dataset.id; state.filters[key] = !state.filters[key]; render({ keepScroll: true }); },
   "open-worker": (el) => go("Worker", { workerId: el.dataset.id, workerTab: "About" }),
+  "open-client": (el) => go("Client", { clientId: el.dataset.id }),
   "worker-tab": (el) => { state.workerTab = el.dataset.id; render({ keepScroll: true }); },
   save: (el) => toggleSaved(el.dataset.id),
   message: (el) => {
     const id = `pro:${el.dataset.id}`;
+    if (!state.threads[id]) state.threads[id] = [];
+    go("Thread", { threadId: id });
+  },
+  "message-client": (el) => {
+    const id = `client:${el.dataset.id}`;
     if (!state.threads[id]) state.threads[id] = [];
     go("Thread", { threadId: id });
   },

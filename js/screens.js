@@ -89,7 +89,7 @@ SCREENS.Worker = () => {
     body = `<ul class="reviews">${(REVIEW_TEXT[w.id] || []).map(([pid, date, text]) => {
       const p = personById(pid);
       return `<li class="review">
-        <div class="review-head">${avatar(p, 36)}<div><b>${esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div></div>
+        <button class="review-head" type="button" data-action="open-client" data-id="${p.id}">${avatar(p, 36)}<div><b>${esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div></button>
         <div class="review-stars" aria-label="5 out of 5 stars">${icon("star-fill", "icon-sm").repeat(5)}</div>
         <p>${esc(text)}</p>
       </li>`;
@@ -122,6 +122,50 @@ SCREENS.Worker = () => {
       <button class="btn btn-secondary" type="button" data-action="message" data-id="${w.id}">${icon("chat-circle")}Message</button>
       <button class="btn btn-primary" type="button" data-action="request" data-id="${w.id}">Request, ${w.from ? "from " : ""}${money(w.rate)}</button>
     </div>`}`;
+};
+
+/* ---------- Homeowner profile ---------- */
+// Deliberately unlike the worker profile: no cover, tabs or hire bar. Pros see who's
+// asking, how they treat pros, and what they need done right now.
+SCREENS.Client = () => {
+  const c = PEOPLE[state.clientId];
+  const asWorker = state.role === "worker";
+  const open = state.jobs.filter((j) => j.client === c.id && j.status === "Open");
+  const reviews = CLIENT_REVIEWS[c.id] || [];
+  return `
+    ${navHeader()}
+    <section class="client-head">
+      ${avatar(c, 72, { verified: c.idVerified })}
+      <div>
+        <span class="client-role">${icon("house", "icon-sm")}Homeowner</span>
+        <h1>${esc(c.name)}</h1>
+        <p>${esc(c.area)}, on SugoBai since ${c.since}</p>
+      </div>
+    </section>
+    <div class="stat-row">
+      <div class="stat"><b>${icon("star-fill")}${c.rating.toFixed(1)}</b><span>from pros</span></div>
+      <div class="stat"><b>${c.hires}</b><span>pros hired</span></div>
+      <div class="stat ${c.idVerified ? "stat-verified" : ""}"><b>${icon(c.idVerified ? "seal-check" : "identification-card")}${c.idVerified ? "Yes" : "Pending"}</b><span>ID verified</span></div>
+    </div>
+    <section class="section">
+      <div class="section-head"><h2>Open jobs</h2></div>
+      ${open.length
+        ? open.map((job) => workerJobCard(job, { poster: false, canOffer: asWorker && job.category === me().category })).join("")
+        : `<p class="saved-empty">No open jobs right now.</p>`}
+    </section>
+    ${reviews.length ? `<section class="section">
+      <div class="section-head"><h2>What pros say</h2></div>
+      <ul class="reviews">${reviews.map(([wid, date, text]) => {
+        const w = workerById(wid);
+        return `<li class="review">
+          <button class="review-head" type="button" data-action="open-worker" data-id="${w.id}">${avatar(w, 36, { verified: w.idVerified })}<div><b>${esc(w.name)}</b><span>${esc(categoryById(w.category).trade)}, ${esc(date)}</span></div></button>
+          <p>${esc(text)}</p>
+        </li>`;
+      }).join("")}</ul>
+    </section>` : ""}
+    ${asWorker ? `<div class="action-bar action-bar-single">
+      <button class="btn btn-secondary" type="button" data-action="message-client" data-id="${c.id}">${icon("chat-circle")}Message ${esc(firstName(c.name))}</button>
+    </div>` : ""}`;
 };
 
 /* ---------- Jobs ---------- */
@@ -170,12 +214,12 @@ function homeownerJobCard(job) {
   </article>`;
 }
 
-function workerJobCard(job) {
+function workerJobCard(job, { poster = true, canOffer = true } = {}) {
   const client = PEOPLE[job.client];
   const hired = job.hired === WORKER_SELF;
   const offered = job.offers.includes(WORKER_SELF);
   return `<article class="job-card">
-    <div class="job-poster">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></div>
+    ${poster ? `<button class="job-poster" type="button" data-action="open-client" data-id="${client.id}">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></button>` : ""}
     <h3 class="job-card-title">${esc(job.title)}</h3>
     ${job.details ? `<p class="job-details">${esc(job.details)}</p>` : ""}
     ${jobMeta(job, workerById(WORKER_SELF).area)}
@@ -183,7 +227,7 @@ function workerJobCard(job) {
       <span class="job-budget">${money(job.budget)}<small> budget</small></span>
       ${hired ? `<span class="badge badge-done">${icon("check-circle")}Hired</span>`
         : offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent, ${money(offerTerms(job, WORKER_SELF).price)}</span>`
-        : `<button class="btn btn-secondary btn-sm" type="button" data-action="offer" data-id="${job.id}">Send offer</button>`}
+        : canOffer ? `<button class="btn btn-secondary btn-sm" type="button" data-action="offer" data-id="${job.id}">Send offer</button>` : ""}
     </div>
   </article>`;
 }
@@ -211,7 +255,7 @@ function workerHome() {
     ${statRow(self)}
     <section class="section">
       <div class="section-head"><h2>New jobs near you</h2><button class="btn btn-ghost" type="button" data-action="tab" data-tab="Jobs">See all</button></div>
-      ${state.loading ? skeletonCards(2) : fresh.length ? fresh.map(workerJobCard).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
+      ${state.loading ? skeletonCards(2) : fresh.length ? fresh.map((job) => workerJobCard(job)).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
     </section>
     ${mine.length ? `<section class="section">
       <div class="section-head"><h2>Your offers</h2></div>
@@ -233,7 +277,7 @@ SCREENS.Jobs = () => {
     const self = workerById(WORKER_SELF);
     const jobs = workerJobs();
     return `${pageHeader(`${categoryById(self.category).label} jobs near you`, { sub: `Open requests around ${self.area}, closest first` })}
-      ${state.loading ? skeletonCards(3) : jobs.length ? jobs.map(workerJobCard).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
+      ${state.loading ? skeletonCards(3) : jobs.length ? jobs.map((job) => workerJobCard(job)).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
   }
   const mine = state.jobs.filter((j) => j.client === WORKER_SELF);
   if (!mine.length) {
@@ -283,7 +327,7 @@ SCREENS.Thread = () => {
   const isWorker = !!other.category;
   const messages = state.threads[id] || [];
   const title = `<span class="thread-title">${avatar(other, 32)}<span><b>${esc(other.name)}</b>${isWorker ? `<span class="${other.idVerified ? "trust-verified" : "trust-pending"}">${other.idVerified ? "ID verified" : "ID pending"}</span>` : `<span>${esc(other.area)}</span>`}</span></span>`;
-  const end = isWorker ? `<button class="btn btn-ghost" type="button" data-action="open-worker" data-id="${other.id}">Profile</button>` : "";
+  const end = `<button class="btn btn-ghost" type="button" data-action="${isWorker ? "open-worker" : "open-client"}" data-id="${other.id}">Profile</button>`;
   return `
     ${navHeader({ title, end })}
     <div class="thread">
