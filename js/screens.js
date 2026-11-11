@@ -86,12 +86,14 @@ SCREENS.Worker = () => {
     body = w.work.length ? `<div class="work-grid">${w.work.map((title, i) => `<figure><img src="${workPhoto(w, i)}" alt="" loading="lazy" /><figcaption>${esc(title)}</figcaption></figure>`).join("")}</div>`
       : `<p class="saved-empty">No work photos yet.</p>`;
   } else if (state.workerTab === "Reviews") {
-    body = `<ul class="reviews">${(REVIEW_TEXT[w.id] || []).map(([pid, date, text]) => {
+    body = `<ul class="reviews">${(REVIEW_TEXT[w.id] || []).map(([pid, date, text, rating = 5]) => {
       const p = personById(pid);
+      // Your own review isn't a link: there's no homeowner profile page for yourself.
+      const head = `${avatar(p, 36)}<div><b>${pid === WORKER_SELF ? "You" : esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div>`;
       return `<li class="review">
-        <button class="review-head" type="button" data-action="open-client" data-id="${p.id}">${avatar(p, 36)}<div><b>${esc(p.name)}</b><span>${esc(p.area)}, ${esc(date)}</span></div></button>
-        <div class="review-stars" aria-label="5 out of 5 stars">${icon("star-fill", "icon-sm").repeat(5)}</div>
-        <p>${esc(text)}</p>
+        ${pid === WORKER_SELF ? `<div class="review-head">${head}</div>` : `<button class="review-head" type="button" data-action="open-client" data-id="${p.id}">${head}</button>`}
+        <div class="review-stars" aria-label="${rating} out of 5 stars">${icon("star-fill", "icon-sm").repeat(rating)}${icon("star", "icon-sm").repeat(5 - rating)}</div>
+        ${text ? `<p>${esc(text)}</p>` : ""}
       </li>`;
     }).join("")}</ul>`;
   } else {
@@ -169,7 +171,25 @@ SCREENS.Client = () => {
 };
 
 /* ---------- Jobs ---------- */
-const STATUS_BADGE = { Open: "badge-open", Requested: "badge-neutral", Hired: "badge-done" };
+// Badge per status. "Done" means the pro marked it finished and payment is pending.
+const STATUS_BADGE = {
+  Open: ["badge-open", "Open"],
+  Requested: ["badge-neutral", "Requested"],
+  "In progress": ["badge-progress", "In progress"],
+  Done: ["badge-attention", "Ready to pay"],
+  Completed: ["badge-done", "Completed"],
+};
+function statusBadge(job) {
+  let [cls, label] = STATUS_BADGE[job.status];
+  if (job.status === "Done" && state.role === "worker") label = "Waiting for payment";
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+// Budget while taking offers, the agreed price once hired, what was paid once completed.
+function jobAmount(job) {
+  if (job.paid) return `<span class="job-budget">${money(job.paid.total)}<small> paid</small></span>`;
+  if (job.agreed) return `<span class="job-budget">${money(job.agreed.price)}<small> agreed</small></span>`;
+  return `<span class="job-budget">${money(job.budget)}<small> budget</small></span>`;
+}
 
 function jobMeta(job, from) {
   const where = from ? `${esc(job.area)}, ${distanceKm(from, job.area)} km` : esc(job.area);
@@ -177,46 +197,95 @@ function jobMeta(job, from) {
 }
 
 function offerTerms(job, workerId) {
-  return job.terms?.[workerId] || { price: job.budget, when: "This week" };
+  return job.terms?.[workerId] || { price: job.budget, due: addDays(state.today, 2) };
 }
-const WHEN_TEXT = { Today: "can start today", Tomorrow: "can start tomorrow", "This week": "can start this week" };
+
+// Countdown to the agreed due date. Past it, shows what's coming off the pay so far.
+function dueStatus(job) {
+  const left = daysBetween(state.today, job.agreed.due);
+  if (left < 0) return `<span class="due due-late">${icon("warning-circle", "icon-sm")}${plural(-left, "day")} late, −${money(lateDeduction(job, state.today).amount)}</span>`;
+  if (left === 0) return `<span class="due due-soon">${icon("clock", "icon-sm")}Due today</span>`;
+  if (left === 1) return `<span class="due due-soon">${icon("clock", "icon-sm")}Due tomorrow</span>`;
+  return `<span class="due">${icon("clock", "icon-sm")}${left} days left</span>`;
+}
+function deadlineRow(job) {
+  return `<div class="deadline"><span>${icon("calendar-blank", "icon-sm")}Due ${fmtDay(job.agreed.due)}</span>${dueStatus(job)}</div>`;
+}
+const lateRuleText = () => `Each day late takes ${LATE_RULE.perDay * 100}% off the price, up to ${LATE_RULE.cap * 100}%.`;
 
 function offerRow(job, w) {
   const t = offerTerms(job, w.id);
   return `<div class="offer">
     ${avatar(w, 40, { verified: w.idVerified })}
-    <div class="offer-body"><b>${esc(w.name)}</b>${trustLine(w, { jobs: false })}<span><b class="offer-price">${money(t.price)}</b>, ${WHEN_TEXT[t.when]}</span></div>
+    <div class="offer-body"><b>${esc(w.name)}</b>${trustLine(w, { jobs: false })}<span><b class="offer-price">${money(t.price)}</b>, done by ${fmtDay(t.due)}</span></div>
     <button class="btn btn-secondary btn-sm" type="button" data-action="hire" data-id="${job.id}:${w.id}">Hire</button>
   </div>`;
 }
 
+// The pro on a job, linking to your conversation with them.
+function proRow(w, meta) {
+  return `<button class="offer offer-link" type="button" data-action="open-thread" data-id="pro:${w.id}">
+    ${avatar(w, 40, { verified: w.idVerified })}
+    <div class="offer-body"><b>${esc(w.name)}</b><span>${meta}</span></div>
+    ${icon("chat-circle")}
+  </button>`;
+}
+
+function stars(n) {
+  return `<span class="stars" aria-label="${n} out of 5 stars">${icon("star-fill", "icon-sm").repeat(n)}</span>`;
+}
+
+function homeownerJobFoot(job) {
+  const w = job.hired && workerById(job.hired);
+  const name = w && esc(firstName(w.name));
+  if (job.status === "In progress") {
+    const ext = job.extension;
+    return `${proRow(w, `Hired ${fmtShort(job.agreed.start)}`)}${deadlineRow(job)}
+      ${ext ? `<div class="notice">
+        <p>${icon("hourglass-medium")}<span><b>${name} asks to move the due date to ${fmtDay(ext.to)}.</b> “${esc(ext.reason)}”</span></p>
+        <div class="notice-actions">
+          <button class="btn btn-secondary btn-sm" type="button" data-action="decline-time" data-id="${job.id}">Keep ${fmtShort(job.agreed.due)}</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-action="approve-time" data-id="${job.id}">Move to ${fmtShort(ext.to)}</button>
+        </div>
+      </div>` : ""}`;
+  }
+  if (job.status === "Done") {
+    const d = lateDeduction(job, state.today);
+    return `${proRow(w, `Marked done ${fmtDay(job.finished)}`)}
+      <p class="job-note">${d.late ? `${icon("warning-circle", "icon-sm")}Finished ${plural(d.late, "day")} late, so ${money(d.amount)} comes off.` : `${icon("check-circle", "icon-sm")}Finished on time.`} Check the work, then pay.</p>
+      <button class="btn btn-primary btn-block" type="button" data-action="pay" data-id="${job.id}">${icon("wallet")}Pay ${money(d.total)}</button>`;
+  }
+  if (job.status === "Completed") {
+    const off = job.paid.deduction ? `, ${money(job.paid.deduction)} late deduction` : "";
+    return `${proRow(w, `Finished ${fmtShort(job.finished)}${off}`)}
+      ${job.reviewed
+        ? `<p class="job-note">${stars(job.reviewed)}You rated ${name}</p>`
+        : `<button class="btn btn-secondary btn-block job-foot-btn" type="button" data-action="review" data-id="${job.id}">${icon("star")}Rate ${name}</button>`}`;
+  }
+  if (job.offers.length) {
+    return `<p class="job-foot-label">${plural(job.offers.length, "offer")}</p>${job.offers.map((id) => offerRow(job, workerById(id))).join("")}`;
+  }
+  if (job.requested) {
+    const r = workerById(job.requested);
+    return `<div class="offer">${avatar(r, 40, { verified: r.idVerified })}<div class="offer-body"><b>${esc(r.name)}</b><span>Waiting for a price and finish date</span></div></div>`;
+  }
+  return `<p class="job-foot-label is-muted">No offers yet. Nearby pros usually reply within an hour.</p>`;
+}
+
 function homeownerJobCard(job) {
   const cat = categoryById(job.category);
-  const hired = job.hired && workerById(job.hired);
-  let foot;
-  if (hired) {
-    foot = `<button class="offer offer-link" type="button" data-action="open-thread" data-id="pro:${hired.id}">
-      ${avatar(hired, 40, { verified: hired.idVerified })}
-      <div class="offer-body"><b>${esc(hired.name)}</b><span>${job.status === "Requested" ? "Waiting for them to confirm" : "Hired. Message to set a schedule."}</span></div>
-      ${icon("chat-circle")}
-    </button>`;
-  } else if (job.offers.length) {
-    foot = `<p class="job-foot-label">${job.offers.length} ${job.offers.length === 1 ? "offer" : "offers"}</p>${job.offers.map((id) => offerRow(job, workerById(id))).join("")}`;
-  } else {
-    foot = `<p class="job-foot-label is-muted">No offers yet. Nearby pros usually reply within an hour.</p>`;
-  }
-  return `<article class="job-card">
+  const removable = job.status === "Open" || job.status === "Requested";
+  return `<article class="job-card${job.status === "Completed" ? " is-past" : ""}">
     <div class="job-head">${rowIcon(cat.icon)}<div class="job-title"><h3>${esc(job.title)}</h3>${jobMeta(job)}</div>
-      <button class="icon-btn job-delete" type="button" data-action="delete-job" data-id="${job.id}" aria-label="Delete ${esc(job.title)}">${icon("trash")}</button>
+      ${removable ? `<button class="icon-btn job-delete" type="button" data-action="delete-job" data-id="${job.id}" aria-label="Delete ${esc(job.title)}">${icon("trash")}</button>` : ""}
     </div>
-    <div class="job-line"><span class="badge ${STATUS_BADGE[job.status]}">${esc(job.status)}</span><span class="job-budget">${money(job.budget)}<small> budget</small></span></div>
-    <div class="job-foot">${foot}</div>
+    <div class="job-line">${statusBadge(job)}${jobAmount(job)}</div>
+    <div class="job-foot">${homeownerJobFoot(job)}</div>
   </article>`;
 }
 
 function workerJobCard(job, { poster = true, canOffer = true } = {}) {
   const client = PEOPLE[job.client];
-  const hired = job.hired === WORKER_SELF;
   const offered = job.offers.includes(WORKER_SELF);
   return `<article class="job-card">
     ${poster ? `<button class="job-poster" type="button" data-action="open-client" data-id="${client.id}">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></button>` : ""}
@@ -225,25 +294,62 @@ function workerJobCard(job, { poster = true, canOffer = true } = {}) {
     ${jobMeta(job, workerById(WORKER_SELF).area)}
     <div class="job-line">
       <span class="job-budget">${money(job.budget)}<small> budget</small></span>
-      ${hired ? `<span class="badge badge-done">${icon("check-circle")}Hired</span>`
-        : offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent, ${money(offerTerms(job, WORKER_SELF).price)}</span>`
+      ${offered ? `<span class="badge badge-neutral">${icon("paper-plane-right")}Offer sent, ${money(offerTerms(job, WORKER_SELF).price)}</span>`
         : canOffer ? `<button class="btn btn-secondary btn-sm" type="button" data-action="offer" data-id="${job.id}">Send offer</button>` : ""}
     </div>
   </article>`;
 }
 
+// Jun's job as a worker that isn't paid yet: in progress, or done and waiting for payment.
+const currentJob = () => state.jobs.find((j) => j.hired === WORKER_SELF && (j.status === "In progress" || j.status === "Done"));
+
+function currentJobCard(job) {
+  const client = PEOPLE[job.client];
+  const name = esc(firstName(client.name));
+  let foot;
+  if (job.status === "Done") {
+    const d = lateDeduction(job, state.today);
+    foot = `<p class="job-note">${icon("hourglass-medium", "icon-sm")}Waiting for ${name} to check the work and pay. You'll get ${money(d.total)}${d.amount ? ` after a ${money(d.amount)} late deduction` : ""}.</p>`;
+  } else if (job.extension || daysBetween(state.today, job.agreed.due) < 0) {
+    // Already asked, or already late: more time can only be asked for up to the due date.
+    const note = job.extension
+      ? `You asked to move it to ${fmtDay(job.extension.to)}. Waiting for ${name}.`
+      : `${lateRuleText()} Finish as soon as you can.`;
+    foot = `${deadlineRow(job)}<p class="job-note">${icon(job.extension ? "hourglass-medium" : "warning-circle", "icon-sm")}${note}</p>
+      <div class="job-actions job-actions-single"><button class="btn btn-primary" type="button" data-action="mark-done" data-id="${job.id}">${icon("check-circle")}Mark as done</button></div>`;
+  } else {
+    foot = `${deadlineRow(job)}
+      <div class="job-actions">
+        <button class="btn btn-secondary" type="button" data-action="ask-time" data-id="${job.id}">${icon("hourglass-medium")}More time</button>
+        <button class="btn btn-primary" type="button" data-action="mark-done" data-id="${job.id}">${icon("check-circle")}Mark as done</button>
+      </div>`;
+  }
+  return `<article class="job-card job-current">
+    <div class="job-current-head">
+      <button class="job-poster" type="button" data-action="open-client" data-id="${client.id}">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></button>
+      <button class="icon-btn" type="button" data-action="open-thread" data-id="client:${client.id}" aria-label="Message ${esc(client.name)}">${icon("chat-circle")}</button>
+    </div>
+    <h3 class="job-card-title">${esc(job.title)}</h3>
+    ${jobMeta(job, me().area)}
+    <div class="job-line">${statusBadge(job)}${jobAmount(job)}</div>
+    <div class="job-foot">${foot}</div>
+  </article>`;
+}
+
+// Open jobs in Jun's trade that he could send an offer on, closest first.
 function workerJobs() {
   const self = workerById(WORKER_SELF);
   return state.jobs
-    .filter((j) => j.category === self.category && (j.status === "Open" || j.hired === WORKER_SELF) && j.client !== WORKER_SELF)
+    .filter((j) => j.category === self.category && j.status === "Open" && j.client !== WORKER_SELF)
     .sort((a, b) => distanceKm(self.area, a.area) - distanceKm(self.area, b.area));
 }
 
-// Worker-mode home: their standing, new jobs to offer on, and offers waiting on a reply.
+// Worker-mode home: their standing, the job they're on, new jobs, and offers waiting on a reply.
 function workerHome() {
   const self = workerById(WORKER_SELF);
-  const fresh = workerJobs().filter((j) => j.status === "Open" && !j.offers.includes(WORKER_SELF)).slice(0, 2);
-  const mine = state.jobs.filter((j) => j.offers.includes(WORKER_SELF) || j.hired === WORKER_SELF);
+  const current = currentJob();
+  const fresh = workerJobs().filter((j) => !j.offers.includes(WORKER_SELF)).slice(0, 2);
+  const pending = state.jobs.filter((j) => j.offers.includes(WORKER_SELF) && j.status === "Open");
   return `
     <header class="home-header">
       <img class="home-mark" src="assets/sugobai-mark-96.webp" alt="SugoBai" width="36" height="36" />
@@ -253,39 +359,74 @@ function workerHome() {
     </header>
     <h1 class="home-title">Ready for work, ${esc(firstName(self.name))}?</h1>
     ${statRow(self)}
+    ${current ? `<section class="section">
+      <div class="section-head"><h2>Current job</h2></div>
+      ${currentJobCard(current)}
+    </section>` : ""}
     <section class="section">
       <div class="section-head"><h2>New jobs near you</h2><button class="btn btn-ghost" type="button" data-action="tab" data-tab="Jobs">See all</button></div>
       ${state.loading ? skeletonCards(2) : fresh.length ? fresh.map((job) => workerJobCard(job)).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
     </section>
-    ${mine.length ? `<section class="section">
+    ${pending.length ? `<section class="section">
       <div class="section-head"><h2>Your offers</h2></div>
-      <div class="list">${mine.map((job) => {
+      <div class="list">${pending.map((job) => {
         const client = PEOPLE[job.client];
-        const hired = job.hired === WORKER_SELF;
+        const t = offerTerms(job, WORKER_SELF);
         return row({
           lead: avatar(client, 44),
           top: `<span class="row-top"><span class="row-title">${esc(job.title)}</span></span>`,
-          meta: hired ? `Hired by ${esc(firstName(client.name))}` : `${money(offerTerms(job, WORKER_SELF).price)} to ${esc(firstName(client.name))}, waiting for reply`,
+          meta: `${money(t.price)} by ${fmtShort(t.due)}, waiting for ${esc(firstName(client.name))}`,
           end: chevron(), action: "open-thread", id: `client:${job.client}`,
         });
       }).join("")}</div>
     </section>` : ""}`;
 }
 
+function workerJobsTab() {
+  const self = me();
+  const current = currentJob();
+  const open = workerJobs();
+  const past = state.jobs.filter((j) => j.hired === WORKER_SELF && j.status === "Completed");
+  return `${pageHeader("Jobs", { sub: `${categoryById(self.category).label} work around ${self.area}` })}
+    ${current ? `<section class="section section-first">
+      <div class="section-head"><h2>Current job</h2></div>
+      ${currentJobCard(current)}
+    </section>` : ""}
+    <section class="section${current ? "" : " section-first"}">
+      <div class="section-head"><h2>Open jobs near you</h2></div>
+      ${state.loading ? skeletonCards(3) : open.length ? open.map((job) => workerJobCard(job)).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}
+    </section>
+    ${past.length ? `<section class="section">
+      <div class="section-head"><h2>Completed</h2></div>
+      <div class="list">${past.map((job) => {
+        const client = PEOPLE[job.client];
+        return row({
+          lead: avatar(client, 44),
+          top: `<span class="row-top"><span class="row-title">${esc(job.title)}</span><span class="row-end">${money(job.paid.total)}</span></span>`,
+          meta: job.paid.deduction ? `<span class="row-late">${money(job.paid.deduction)} off, ${plural(lateDeduction(job, state.today).late, "day")} late</span>` : `Paid ${fmtShort(job.paid.on)}, on time`,
+          end: "", action: "open-thread", id: `client:${job.client}`,
+        });
+      }).join("")}</div>
+    </section>` : ""}`;
+}
+
+// Homeowner jobs: what needs you first (pay, approve), then work underway, then open posts.
+const HOMEOWNER_ORDER = ["Done", "In progress", "Requested", "Open"];
+
 SCREENS.Jobs = () => {
-  if (state.role === "worker") {
-    const self = workerById(WORKER_SELF);
-    const jobs = workerJobs();
-    return `${pageHeader(`${categoryById(self.category).label} jobs near you`, { sub: `Open requests around ${self.area}, closest first` })}
-      ${state.loading ? skeletonCards(3) : jobs.length ? jobs.map((job) => workerJobCard(job)).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}`;
-  }
+  if (state.role === "worker") return workerJobsTab();
   const mine = state.jobs.filter((j) => j.client === WORKER_SELF);
   if (!mine.length) {
     return `${pageHeader("Your jobs")}
       ${emptyState({ icon: "briefcase", title: "No jobs yet", text: "Describe what you need and nearby pros will send you offers.", action: `<button class="btn btn-primary" type="button" data-action="post-job">${icon("plus")}Post a job</button>` })}`;
   }
-  return `${pageHeader("Your jobs", { end: `<button class="btn btn-primary btn-sm" type="button" data-action="post-job">${icon("plus", "icon-sm")}Post a job</button>` })}
-    ${mine.map(homeownerJobCard).join("")}`;
+  const active = mine.filter((j) => j.status !== "Completed").sort((a, b) => HOMEOWNER_ORDER.indexOf(a.status) - HOMEOWNER_ORDER.indexOf(b.status));
+  const past = mine.filter((j) => j.status === "Completed");
+  // One primary action per screen: paying wins over posting.
+  const postCls = active.some((j) => j.status === "Done") ? "btn-secondary" : "btn-primary";
+  return `${pageHeader("Your jobs", { end: `<button class="btn ${postCls} btn-sm" type="button" data-action="post-job">${icon("plus", "icon-sm")}Post a job</button>` })}
+    ${active.map(homeownerJobCard).join("")}
+    ${past.length ? `<section class="section"><div class="section-head"><h2>Completed</h2></div>${past.map(homeownerJobCard).join("")}</section>` : ""}`;
 };
 
 /* ---------- Inbox and thread ---------- */
@@ -315,8 +456,7 @@ SCREENS.Inbox = () => {
     return row({
       lead: avatar(other, 48, { verified: isWorker && other.idVerified }),
       top: `<span class="row-top"><span class="row-title">${esc(other.name)}</span><span class="row-end">${esc(last.time)}</span></span>`,
-      meta: `${unread ? `<span class="unread-dot"><span class="visually-hidden">New: </span></span>` : ""}${last.from === myId() ? "You: " : ""}${esc(last.text)}`,
-      action: "open-thread", id,
+      meta: `${unread ? `<span class="unread-dot"><span class="visually-hidden">New: </span></span>` : ""}${last.from === myId() ? "You: " : ""}${esc(last.text)}`,      action: "open-thread", id,
     }).replace('class="row"', `class="row${unread ? " is-unread" : ""}"`);
   }).join("")}</div>`;
 };
@@ -332,7 +472,9 @@ SCREENS.Thread = () => {
     ${navHeader({ title, end })}
     <div class="thread">
       ${messages.length ? "" : `<p class="thread-hint">Ask ${esc(firstName(other.name))} about price, schedule or what to prepare.</p>`}
-      ${messages.map((m) => `<div class="bubble ${m.from === myId() ? "mine" : ""}"><p>${esc(m.text)}</p><time>${esc(m.time)}</time></div>`).join("")}
+      ${messages.map((m) => m.from === "system"
+        ? `<p class="thread-event"><span>${esc(m.text)}</span><time>${esc(m.time)}</time></p>`
+        : `<div class="bubble ${m.from === myId() ? "mine" : ""}"><p>${esc(m.text)}</p><time>${esc(m.time)}</time></div>`).join("")}
     </div>
     <form class="composer" data-form="message">
       <button class="icon-btn" type="button" aria-label="Attach a photo" data-action="attach">${icon("camera")}</button>
@@ -389,9 +531,9 @@ function areaSheet() {
 
 function deleteJobSheet(job) {
   const n = job.offers.length;
-  const hired = job.hired && workerById(job.hired);
-  const effect = hired ? ` ${esc(firstName(hired.name))} will be told the job is cancelled.`
-    : n ? ` The ${n === 1 ? "offer" : `${n} offers`} on it will be declined.` : "";
+  const asked = job.requested && workerById(job.requested);
+  const effect = n ? ` The ${n === 1 ? "offer" : `${n} offers`} on it will be declined.`
+    : asked ? ` ${esc(firstName(asked.name))} will be told the request is cancelled.` : "";
   return sheet("Delete this job?", `<p class="sheet-text">“${esc(job.title)}” will be removed from SugoBai.${effect}</p>
     <div class="sheet-actions">
       <button class="btn btn-secondary" type="button" data-action="close-sheet">Keep job</button>
@@ -406,12 +548,83 @@ function offerSheet(job) {
   return sheet("Send an offer", `<form data-form="offer" data-id="${job.id}">
     <div class="offer-job">${rowIcon(cat.icon)}<div><b>${esc(job.title)}</b><span>${esc(name)} in ${esc(job.area)}, budget ${money(job.budget)}</span></div></div>
     <label class="field">Your price (₱)<input name="price" type="number" inputmode="numeric" min="100" step="50" required value="${job.budget}" /></label>
-    <fieldset class="field" style="border:0;padding:0;margin:0 0 16px">
-      <legend style="padding:0;margin-bottom:6px">When can you start?</legend>
-      <div class="option-grid">${["Today", "Tomorrow", "This week"].map((w, i) => `<label class="option"><input type="radio" name="when" value="${w}" ${i === 1 ? "checked" : ""} /><span>${w}</span></label>`).join("")}</div>
-    </fieldset>
+    ${dayPicker({ legend: "I'll finish by", name: "due", from: state.today, count: 7, checked: 1 })}
+    <p class="field-hint">${icon("warning-circle", "icon-sm")}<span>${lateRuleText()} Pick a date you can keep.</span></p>
     <label class="field">Message to ${esc(name)}<textarea name="note" rows="3" maxlength="300">Hi ${esc(name)}, I've done this kind of ${esc(cat.label.toLowerCase())} job many times. I'll bring my own tools.</textarea></label>
     <button class="btn btn-primary btn-block" type="submit">${icon("paper-plane-right")}Send offer</button>
+  </form>`);
+}
+
+// A row of day buttons starting at `from`. Labels: Today, Tomorrow, then weekday + date.
+function dayPicker({ legend, name, from, count, checked = 0 }) {
+  const days = Array.from({ length: count }, (_, i) => addDays(from, i));
+  const top = (iso) => {
+    const d = daysBetween(state.today, iso);
+    return d === 0 ? "Today" : d === 1 ? "Tmrw" : parseDay(iso).toLocaleDateString("en-US", { weekday: "short" });
+  };
+  return `<fieldset class="fieldset">
+    <legend>${esc(legend)}</legend>
+    <div class="day-picker">${days.map((iso, i) => `<label class="option day"><input type="radio" name="${name}" value="${iso}" ${i === checked ? "checked" : ""} aria-label="${fmtDay(iso)}" /><span><small>${top(iso)}</small><b>${parseDay(iso).getDate()}</b><small>${parseDay(iso).toLocaleDateString("en-US", { month: "short" })}</small></span></label>`).join("")}</div>
+  </fieldset>`;
+}
+
+// Worker asks the homeowner to move the due date. If they agree, nothing comes off.
+function moreTimeSheet(job) {
+  const name = esc(firstName(PEOPLE[job.client].name));
+  return sheet("Ask for more time", `<form data-form="more-time" data-id="${job.id}">
+    <p class="sheet-text">Due ${fmtDay(job.agreed.due)}. If ${name} agrees to a new date, finishing by then counts as on time.</p>
+    ${dayPicker({ legend: "Move it to", name: "to", from: addDays(job.agreed.due, 1), count: 4 })}
+    <label class="field">Why do you need more time?<textarea name="reason" rows="3" maxlength="200" required placeholder="Waiting for a part, or the weather"></textarea></label>
+    <button class="btn btn-primary btn-block" type="submit">${icon("paper-plane-right")}Send to ${name}</button>
+  </form>`);
+}
+
+function markDoneSheet(job) {
+  const name = esc(firstName(PEOPLE[job.client].name));
+  const d = lateDeduction(job, state.today);
+  const pay = d.amount
+    ? `You're ${plural(d.late, "day")} late, so ${money(d.amount)} comes off. You'll get <b>${money(d.total)}</b>.`
+    : `You're on time. You'll get <b>${money(d.total)}</b>.`;
+  return sheet("Mark this job as done?", `<p class="sheet-text">${name} will be asked to check the work and pay. ${pay}</p>
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" type="button" data-action="close-sheet">Not yet</button>
+      <button class="btn btn-primary" type="button" data-action="confirm-done" data-id="${job.id}">${icon("check-circle")}Mark as done</button>
+    </div>`);
+}
+
+// Homeowner pays through SugoBai. The late deduction is applied here, so it's automatic.
+function paySheet(job) {
+  const w = workerById(job.hired);
+  const name = esc(firstName(w.name));
+  const d = lateDeduction(job, state.today);
+  return sheet(`Pay ${firstName(w.name)}`, `<form data-form="pay" data-id="${job.id}">
+    <div class="offer-job">${avatar(w, 40, { verified: w.idVerified })}<div><b>${esc(job.title)}</b><span>${esc(w.name)}, finished ${fmtDay(job.finished)}</span></div></div>
+    <dl class="summary">
+      <div><dt>Agreed price</dt><dd>${money(job.agreed.price)}</dd></div>
+      <div><dt>Due date</dt><dd>${fmtDay(job.agreed.due)}</dd></div>
+      ${d.late ? `<div class="is-late"><dt>${icon("warning-circle", "icon-sm")}${plural(d.late, "day")} late (${Math.round(d.rate * 100)}% off)</dt><dd>−${money(d.amount)}</dd></div>` : ""}
+      <div class="summary-total"><dt>You pay</dt><dd>${money(d.total)}</dd></div>
+    </dl>
+    <fieldset class="fieldset">
+      <legend>Pay with</legend>
+      <div class="option-grid">${["GCash", "Maya", "Card"].map((m, i) => `<label class="option"><input type="radio" name="method" value="${m}" ${i === 0 ? "checked" : ""} /><span>${m}</span></label>`).join("")}</div>
+    </fieldset>
+    <p class="field-hint">${icon("seal-check", "icon-sm")}<span>Paying confirms the job is done. ${name} gets the money right away.</span></p>
+    <button class="btn btn-primary btn-block" type="submit">${icon("wallet")}Pay ${money(d.total)}</button>
+  </form>`);
+}
+
+function reviewSheet(job) {
+  const w = workerById(job.hired);
+  const name = esc(firstName(w.name));
+  return sheet(`Rate ${firstName(w.name)}`, `<form data-form="review" data-id="${job.id}">
+    <p class="sheet-text">${job.paid.on === state.today ? `You paid ${money(job.paid.total)}. ` : ""}How did ${name} do on “${esc(job.title)}”?</p>
+    <fieldset class="fieldset">
+      <legend class="visually-hidden">Rating</legend>
+      <div class="star-input">${[5, 4, 3, 2, 1].map((n) => `<input type="radio" id="star-${n}" name="stars" value="${n}" ${n === 5 ? "checked" : ""} /><label for="star-${n}" aria-label="${plural(n, "star")}">${icon("star-fill", "icon-lg")}</label>`).join("")}</div>
+    </fieldset>
+    <label class="field">What went well? (optional)<textarea name="text" rows="3" maxlength="300" placeholder="On time, clean work, fair price"></textarea></label>
+    <button class="btn btn-primary btn-block" type="submit">Post review</button>
   </form>`);
 }
 

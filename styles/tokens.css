@@ -17,7 +17,8 @@
   --accent-wash: #fdebd8;
   --trust: #1e6b47;        /* semantic: verified, available */
   --trust-wash: #e3f1e8;
-  --danger: #b42318;
+  --danger: #b42318;       /* also: late, money taken off */
+  --danger-wash: #fbe9e7;  /* danger on it: 5.62 */
   --scrim: rgb(30 36 44 / 0.45);
 
   /* Type */

@@ -203,6 +203,7 @@ const REVIEW_TEXT = {
     ["lena", "Aug 2026", "Explained the problem clearly and the price was what he quoted."],
   ],
   marites: [
+    ["jun", "Nov 2026", "The house was spotless before our guests came. She even cleaned the fan blades.", 5],
     ["paolo", "Oct 2026", "Our condo has never been this clean. She even did the windows."],
     ["mika", "Sep 2026", "Careful with our things and finished early. Booking her again."],
   ],
@@ -259,25 +260,46 @@ const REVIEW_TEXT = {
   ],
 };
 
+// The demo runs on a fixed "today" so due dates and countdowns read the same at every presentation.
+const DEMO_TODAY = "2026-11-12";
+
+// Late rule: for each day a worker finishes past the agreed date, 5% of the agreed price
+// comes off what they're paid, up to 25%. An approved extension moves the date with no deduction.
+const LATE_RULE = { perDay: 0.05, cap: 0.25 };
+
+// Job lifecycle: Open (taking offers) or Requested (sent to one pro) → In progress (hired,
+// with an agreed price and due date) → Done (pro marked it finished) → Completed (paid).
 const SEED_JOBS = [
   // Posted by the account holder (Jun, as a homeowner).
-  { id: "job-gate", title: "Repaint the front gate and grills", category: "painting", details: "Steel gate and window grills, some rust. Paint already bought.", area: "Talamban", budget: 1800, client: "jun", status: "Open", posted: "40 min ago", offers: ["nonoy", "cherry"],
-    terms: { nonoy: { price: 1800, when: "Tomorrow" }, cherry: { price: 1600, when: "This week" } } },
-  { id: "job-clean", title: "Deep clean before the fiesta", category: "cleaning", details: "Two-storey house, three bedrooms. Kitchen and bathrooms most important.", area: "Talamban", budget: 1500, client: "jun", status: "Open", posted: "3 hr ago", offers: [] },
+  { id: "job-faucet", title: "Replace the bathroom faucet", category: "plumbing", details: "Faucet drips and the handle is loose. Part to be bought by the plumber.", area: "Talamban", budget: 1000, client: "jun", status: "Done", posted: "Nov 8", offers: [],
+    hired: "rico", agreed: { price: 1000, start: "2026-11-09", due: "2026-11-10" }, finished: "2026-11-11" },
+  { id: "job-gate", title: "Repaint the front gate and grills", category: "painting", details: "Steel gate and window grills, some rust. Paint already bought.", area: "Talamban", budget: 1800, client: "jun", status: "In progress", posted: "Nov 9", offers: [],
+    hired: "nonoy", agreed: { price: 1800, start: "2026-11-10", due: "2026-11-13" },
+    extension: { to: "2026-11-14", reason: "It rained on Tuesday, so the primer needs one more day to dry before the topcoat." } },
+  { id: "job-clean", title: "Deep clean before the fiesta", category: "cleaning", details: "Two-storey house, three bedrooms. Kitchen and bathrooms most important.", area: "Talamban", budget: 1500, client: "jun", status: "Open", posted: "3 hr ago", offers: ["marites", "grace"],
+    terms: { marites: { price: 1500, due: "2026-11-14" }, grace: { price: 1400, due: "2026-11-13" } } },
+  { id: "job-sala", title: "Clean the house before guests arrive", category: "cleaning", details: "", area: "Talamban", budget: 900, client: "jun", status: "Completed", posted: "Nov 5", offers: [],
+    hired: "marites", agreed: { price: 900, start: "2026-11-11", due: "2026-11-11" }, finished: "2026-11-11", paid: { total: 900, deduction: 0, on: "2026-11-11" }, reviewed: 5 },
+  // Jun's current electrical job, and one he finished late last week.
+  { id: "job-lena", title: "Replace the kitchen light fixture", category: "electrical", details: "Old fluorescent fixture flickers. New LED fixture already bought.", area: "Banilad", budget: 900, client: "lena", status: "In progress", posted: "Nov 10", offers: [],
+    hired: "jun", agreed: { price: 900, start: "2026-11-11", due: "2026-11-13" } },
+  { id: "job-12", title: "Wall lights for the front porch", category: "electrical", details: "Two outdoor wall lights, already bought. Switch should be inside the door.", area: "Capitol Site", budget: 1200, client: "bea", status: "Completed", posted: "Nov 4", offers: [],
+    hired: "jun", agreed: { price: 1200, start: "2026-11-06", due: "2026-11-08" }, finished: "2026-11-10", paid: { total: 1080, deduction: 120, on: "2026-11-10" } },
   // Electrical jobs Jun can send offers on, one or two per area.
   { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["jun", "ana"],
-    terms: { jun: { price: 800, when: "Tomorrow" }, ana: { price: 700, when: "Today" } } },
+    terms: { jun: { price: 800, due: "2026-11-13" }, ana: { price: 700, due: "2026-11-12" } } },
   { id: "job-5", title: "Breaker keeps tripping at night", category: "electrical", details: "Main breaker trips when the aircon and rice cooker run together.", area: "Talamban", budget: 700, client: "nestor", status: "Open", posted: "15 min ago", offers: [] },
-  { id: "job-6", title: "Add two outlets in the bedroom", category: "electrical", details: "Need outlets on the wall by the desk. Concrete wall, surface wiring is fine.", area: "Guadalupe", budget: 900, client: "carlo", status: "Open", posted: "50 min ago", offers: ["arvin"] },
+  { id: "job-6", title: "Add two outlets in the bedroom", category: "electrical", details: "Need outlets on the wall by the desk. Concrete wall, surface wiring is fine.", area: "Guadalupe", budget: 900, client: "carlo", status: "Open", posted: "50 min ago", offers: ["arvin"],
+    terms: { arvin: { price: 900, due: "2026-11-14" } } },
   { id: "job-11", title: "Check outlets before a party", category: "electrical", details: "Two outlets spark when plugged in. Want them checked before Saturday.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "Yesterday", offers: [] },
-  { id: "job-12", title: "Wall lights for the front porch", category: "electrical", details: "Two outdoor wall lights, already bought. Switch should be inside the door.", area: "Capitol Site", budget: 1200, client: "bea", status: "Open", posted: "2 hr ago", offers: [] },
   { id: "job-13", title: "Aircon outlet is loose", category: "electrical", details: "The plug wobbles and the outlet gets warm. Condo unit, 12th floor.", area: "IT Park", budget: 500, client: "paolo", status: "Open", posted: "4 hr ago", offers: [] },
   { id: "job-14", title: "Replace a dead light switch", category: "electrical", details: "Hallway switch stopped working. Bulb is fine.", area: "Banilad", budget: 400, client: "rhea", status: "Open", posted: "5 hr ago", offers: [] },
   // Other trades, so the marketplace isn't only electrical.
   { id: "job-2", title: "Leaking pipe under the kitchen sink", category: "plumbing", details: "Slow drip under the sink, worse at night. Hoping someone can check it this week.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "1 hr ago", offers: [] },
   { id: "job-3", title: "General cleaning, 2-bedroom condo", category: "cleaning", details: "Kitchen, two bathrooms and floors. Supplies provided if needed.", area: "IT Park", budget: 1500, client: "paolo", status: "Open", posted: "2 hr ago", offers: [] },
   { id: "job-4", title: "Fix a loose cabinet hinge", category: "carpentry", details: "Upper kitchen cabinet door is hanging from one hinge.", area: "Banilad", budget: 400, client: "lena", status: "Open", posted: "3 hr ago", offers: [] },
-  { id: "job-7", title: "Pick up medicine and groceries", category: "errands", details: "Pharmacy then the supermarket on Escario. List will be sent in chat.", area: "Capitol Site", budget: 250, client: "bea", status: "Open", posted: "10 min ago", offers: ["jessa"] },
+  { id: "job-7", title: "Pick up medicine and groceries", category: "errands", details: "Pharmacy then the supermarket on Escario. List will be sent in chat.", area: "Capitol Site", budget: 250, client: "bea", status: "Open", posted: "10 min ago", offers: ["jessa"],
+    terms: { jessa: { price: 250, due: "2026-11-12" } } },
   { id: "job-9", title: "Paint one bedroom wall", category: "painting", details: "Accent wall, about 3 by 4 meters. Color is picked out.", area: "Lahug", budget: 1200, client: "arnel", status: "Open", posted: "6 hr ago", offers: [] },
 ];
 
@@ -290,6 +312,23 @@ const workerById = (id) => WORKERS.find((w) => w.id === id);
 const personById = (id) => PEOPLE[id] || workerById(id);
 const workerPhoto = (w) => `assets/people/${w.id}.webp`;
 const workPhoto = (w, i) => `assets/work/${w.id}-${i + 1}.webp`;
+
+/* ---------- Dates (ISO "YYYY-MM-DD", local time) ---------- */
+const parseDay = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); };
+const isoDay = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+const addDays = (iso, n) => { const d = parseDay(iso); d.setDate(d.getDate() + n); return isoDay(d); };
+const daysBetween = (from, to) => Math.round((parseDay(to) - parseDay(from)) / 86400000);
+const fmtDay = (iso) => parseDay(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); // "Fri, Nov 13"
+const fmtShort = (iso) => parseDay(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });             // "Nov 13"
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+// Late deduction for a job with an agreed price and due date, as of when it was finished (or today).
+function lateDeduction(job, today) {
+  const late = Math.max(0, daysBetween(job.agreed.due, job.finished || today));
+  const rate = Math.min(LATE_RULE.cap, late * LATE_RULE.perDay);
+  const amount = Math.round(job.agreed.price * rate);
+  return { late, rate, amount, total: job.agreed.price - amount };
+}
 
 // Road distance estimate between two areas, in km.
 function distanceKm(from, to) {

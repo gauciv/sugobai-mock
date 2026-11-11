@@ -18,34 +18,43 @@ const state = {
   clientId: null,
   threadId: null,
   saved: ["marites", "rico"],
-  jobs: SEED_JOBS.map((job) => ({ ...job, offers: [...job.offers] })),
+  today: DEMO_TODAY,
+  jobs: structuredClone(SEED_JOBS),
   // "pro:<workerId>": Jun hiring a pro. "client:<personId>": Jun working for a homeowner.
+  // Messages from "system" are job events (hired, due date moved, paid) shown inline.
   threads: {
     "pro:nonoy": [
-      { from: "jun", text: "Hi Nonoy, can you look at our gate this week? It's rusting at the bottom.", time: "10:05 AM" },
-      { from: "nonoy", text: "Yes po, I can come tomorrow morning. I'll scrape and prime first so it lasts.", time: "10:21 AM" },
+      { from: "jun", text: "Hi Nonoy, can you look at our gate this week? It's rusting at the bottom.", time: "Nov 9" },
+      { from: "nonoy", text: "Yes po, I can start tomorrow. I'll scrape and prime first so it lasts.", time: "Nov 9" },
+      { from: "system", text: "You hired Nonoy for ₱1,800, due Fri, Nov 13", time: "Nov 9" },
+      { from: "nonoy", text: "Pasensya po, it rained on Tuesday so the primer needs one more day. I asked to move the date to Saturday.", time: "8:12 AM" },
     ],
     "pro:marites": [
+      { from: "system", text: "You paid Marites ₱900", time: "Yesterday" },
       { from: "jun", text: "Thank you, Ate Marites! The house looks great.", time: "Yesterday" },
       { from: "marites", text: "Salamat po! See you again next month.", time: "Yesterday" },
     ],
     "pro:rico": [
-      { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Mon" },
-      { from: "jun", text: "Okay, go ahead. Thanks Rico.", time: "Mon" },
+      { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Nov 8" },
+      { from: "jun", text: "Okay, go ahead. Thanks Rico.", time: "Nov 8" },
+      { from: "system", text: "Rico marked the job done", time: "Yesterday" },
+      { from: "rico", text: "Done po. The new faucet is in and there's no more drip. Sorry it took an extra day.", time: "Yesterday" },
     ],
     "client:mika": [
       { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
-      { from: "jun", text: "Hi Mika! Yes, I can come Thursday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
+      { from: "jun", text: "Hi Mika! Yes, I can come Friday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
     ],
     "client:joy": [
       { from: "joy", text: "Hi Jun, are you free to check our outlets in Mabolo this Saturday?", time: "Yesterday" },
     ],
     "client:lena": [
-      { from: "jun", text: "Good afternoon po. I'm on my way, around 15 minutes.", time: "Mon" },
-      { from: "lena", text: "Okay po, the gate is open. Thank you!", time: "Mon" },
+      { from: "system", text: "Lena hired you for ₱900, due Fri, Nov 13", time: "Nov 10" },
+      { from: "jun", text: "Good afternoon po. I'm on my way, around 15 minutes.", time: "Yesterday" },
+      { from: "jun", text: "The old fixture is out. The new one needs a longer bracket, so I'll bring it tomorrow and finish.", time: "Yesterday" },
+      { from: "lena", text: "Okay po, thank you Jun!", time: "Yesterday" },
     ],
   },
-  unread: ["pro:nonoy", "client:joy"],
+  unread: ["pro:nonoy", "pro:rico", "client:joy"],
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
@@ -80,10 +89,16 @@ function currentTab() {
   return "Home";
 }
 
+let renderedKey = "";
 function render({ keepScroll = false } = {}) {
   const top = scrollEl.scrollTop;
+  // Keep a half-typed message when a simulated reply re-renders the same thread.
+  const key = `${state.view}:${state.threadId}`;
+  const draft = key === renderedKey ? scrollEl.querySelector(".composer input")?.value : "";
   const screen = SCREENS[state.view] || SCREENS.Home;
   scrollEl.innerHTML = screen();
+  renderedKey = key;
+  if (draft) scrollEl.querySelector(".composer input").value = draft;
   scrollEl.dataset.view = state.view;
   appEl.classList.toggle("no-tabbar", NO_TABBAR.includes(state.view));
   document.querySelectorAll(".tab").forEach((tab) => {
@@ -134,12 +149,27 @@ function switchRole() {
 }
 
 // Add a message and move its thread to the top of the inbox.
-function sendMessage(threadId, text) {
+function addMessage(threadId, from, text) {
   const { [threadId]: thread = [], ...rest } = state.threads;
-  state.threads = { [threadId]: [...thread, { from: WORKER_SELF, text, time: nowTime() }], ...rest };
+  state.threads = { [threadId]: [...thread, { from, text, time: nowTime() }], ...rest };
+}
+const sendMessage = (threadId, text) => addMessage(threadId, WORKER_SELF, text);
+const postEvent = (threadId, text) => addMessage(threadId, "system", text);
+function receive(threadId, from, text) {
+  addMessage(threadId, from, text);
+  const reading = state.view === "Thread" && state.threadId === threadId;
+  if (!reading && !state.unread.includes(threadId)) state.unread.push(threadId);
+}
+
+// The other side of a job is played by the demo: their reply lands a few seconds later.
+function later(fn, ms = 2600) {
+  setTimeout(() => { fn(); render({ keepScroll: true }); }, ms);
 }
 
 const nowTime = () => new Date().toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
+const jobById = (id) => state.jobs.find((j) => j.id === id);
+// Thread between Jun and the other side of a job, from Jun's side.
+const jobThread = (job) => (job.client === WORKER_SELF ? `pro:${job.hired}` : `client:${job.client}`);
 
 const ACTIONS = {
   back,
@@ -182,20 +212,71 @@ const ACTIONS = {
   "post-job": () => openSheet(postJobSheet()),
   request: (el) => {
     const worker = workerById(el.dataset.id);
+    const name = firstName(worker.name);
     const cat = categoryById(worker.category);
-    state.jobs.unshift({ id: `job-${Date.now()}`, title: `${cat.label} request for ${firstName(worker.name)}`, category: worker.category, details: "", area: state.area, budget: worker.rate, client: WORKER_SELF, status: "Requested", posted: "Just now", offers: [], hired: worker.id });
-    sendMessage(`pro:${worker.id}`, `Hi ${firstName(worker.name)}, I sent you a request for ${cat.label.toLowerCase()} work in ${state.area}.`);
+    const job = { id: `job-${Date.now()}`, title: `${cat.label} request for ${name}`, category: worker.category, details: "", area: state.area, budget: worker.rate, client: WORKER_SELF, status: "Requested", posted: "Just now", offers: [], requested: worker.id };
+    state.jobs.unshift(job);
+    sendMessage(`pro:${worker.id}`, `Hi ${name}, I sent you a request for ${cat.label.toLowerCase()} work in ${state.area}.`);
     go("Jobs");
-    showToast(`Request sent to ${firstName(worker.name)}`);
+    showToast(`Request sent to ${name}`);
+    // The pro answers with a price and a finish date, which Jun can then hire.
+    later(() => {
+      if (!jobById(job.id) || job.status !== "Requested") return;
+      const due = addDays(state.today, 2);
+      job.offers = [worker.id];
+      job.terms = { [worker.id]: { price: worker.rate, due } };
+      receive(`pro:${worker.id}`, worker.id, `Hi Jun! I can do it for ${money(worker.rate)} and finish by ${fmtDay(due)}.`);
+      showToast(`${name} sent a price and finish date`);
+    });
   },
   hire: (el) => {
     const [jobId, workerId] = el.dataset.id.split(":");
-    const job = state.jobs.find((j) => j.id === jobId);
-    job.status = "Hired"; job.hired = workerId;
+    const job = jobById(jobId);
+    const { price, due } = offerTerms(job, workerId);
+    Object.assign(job, { status: "In progress", hired: workerId, offers: [], agreed: { price, start: state.today, due } });
+    const name = firstName(workerById(workerId).name);
+    postEvent(`pro:${workerId}`, `You hired ${name} for ${money(price)}, due ${fmtDay(due)}`);
     render({ keepScroll: true });
-    showToast(`You hired ${firstName(workerById(workerId).name)}`);
+    showToast(`You hired ${name}. Due ${fmtDay(due)}.`);
   },
-  "delete-job": (el) => openSheet(deleteJobSheet(state.jobs.find((j) => j.id === el.dataset.id))),
+  "approve-time": (el) => {
+    const job = jobById(el.dataset.id);
+    job.agreed.due = job.extension.to;
+    delete job.extension;
+    postEvent(jobThread(job), `You moved the due date to ${fmtDay(job.agreed.due)}`);
+    render({ keepScroll: true });
+    showToast(`Due date moved to ${fmtDay(job.agreed.due)}`);
+  },
+  "decline-time": (el) => {
+    const job = jobById(el.dataset.id);
+    delete job.extension;
+    postEvent(jobThread(job), `You kept the due date, ${fmtDay(job.agreed.due)}`);
+    render({ keepScroll: true });
+    showToast(`Due date stays ${fmtDay(job.agreed.due)}`);
+  },
+  pay: (el) => openSheet(paySheet(jobById(el.dataset.id))),
+  review: (el) => openSheet(reviewSheet(jobById(el.dataset.id))),
+  "ask-time": (el) => openSheet(moreTimeSheet(jobById(el.dataset.id))),
+  "mark-done": (el) => openSheet(markDoneSheet(jobById(el.dataset.id))),
+  "confirm-done": (el) => {
+    const job = jobById(el.dataset.id);
+    const client = PEOPLE[job.client];
+    const name = firstName(client.name);
+    Object.assign(job, { status: "Done", finished: state.today });
+    postEvent(jobThread(job), "You marked the job done");
+    closeSheet();
+    render({ keepScroll: true });
+    showToast(`${name} will check the work and pay`);
+    later(() => {
+      const d = lateDeduction(job, state.today);
+      Object.assign(job, { status: "Completed", paid: { total: d.total, deduction: d.amount, on: state.today } });
+      me().jobs += 1;
+      postEvent(jobThread(job), `${name} paid you ${money(d.total)}`);
+      receive(jobThread(job), client.id, "Salamat Jun! Everything works. I'll book you again.");
+      showToast(`${name} paid you ${money(d.total)}`);
+    }, 3200);
+  },
+  "delete-job": (el) => openSheet(deleteJobSheet(jobById(el.dataset.id))),
   "confirm-delete": (el) => {
     state.jobs = state.jobs.filter((j) => j.id !== el.dataset.id);
     closeSheet();
@@ -242,15 +323,57 @@ const FORMS = {
     showToast("Job posted. Nearby pros can now send offers.");
   },
   offer: (data, form) => {
-    const job = state.jobs.find((j) => j.id === form.dataset.id);
+    const job = jobById(form.dataset.id);
     const price = Number(data.get("price"));
+    const due = String(data.get("due"));
     job.offers.push(WORKER_SELF);
-    (job.terms ||= {})[WORKER_SELF] = { price, when: String(data.get("when")) };
+    (job.terms ||= {})[WORKER_SELF] = { price, due };
     const note = String(data.get("note") || "").trim();
-    sendMessage(`client:${job.client}`, `${note ? `${note} ` : ""}My offer: ${money(price)}, ${String(data.get("when")).toLowerCase()}.`);
+    sendMessage(`client:${job.client}`, `${note ? `${note} ` : ""}My offer: ${money(price)}, done by ${fmtDay(due)}.`);
     closeSheet();
     render({ keepScroll: true });
     showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
+  },
+  pay: (data, form) => {
+    const job = jobById(form.dataset.id);
+    const w = workerById(job.hired);
+    const d = lateDeduction(job, state.today);
+    Object.assign(job, { status: "Completed", paid: { total: d.total, deduction: d.amount, on: state.today, method: String(data.get("method")) } });
+    w.jobs += 1;
+    postEvent(`pro:${w.id}`, `You paid ${firstName(w.name)} ${money(d.total)}`);
+    render({ keepScroll: true });
+    openSheet(reviewSheet(job)); // the review sheet confirms the payment, so no toast under it
+  },
+  review: (data, form) => {
+    const job = jobById(form.dataset.id);
+    const w = workerById(job.hired);
+    const stars = Number(data.get("stars"));
+    const text = String(data.get("text") || "").trim();
+    job.reviewed = stars;
+    (REVIEW_TEXT[w.id] ||= []).unshift([WORKER_SELF, parseDay(state.today).toLocaleDateString("en-US", { month: "short", year: "numeric" }), text, stars]);
+    w.rating = Math.round(((w.rating * w.reviews + stars) / (w.reviews + 1)) * 10) / 10;
+    w.reviews += 1;
+    closeSheet();
+    render({ keepScroll: true });
+    showToast(`Thanks! Your review is on ${firstName(w.name)}'s profile.`);
+  },
+  "more-time": (data, form) => {
+    const job = jobById(form.dataset.id);
+    const client = PEOPLE[job.client];
+    const name = firstName(client.name);
+    const to = String(data.get("to"));
+    job.extension = { to, reason: String(data.get("reason")).trim() };
+    postEvent(jobThread(job), `You asked to move the due date to ${fmtDay(to)}`);
+    closeSheet();
+    render({ keepScroll: true });
+    showToast(`Asked ${name} for more time`);
+    later(() => {
+      if (!job.extension) return;
+      job.agreed.due = job.extension.to;
+      delete job.extension;
+      postEvent(jobThread(job), `${name} moved the due date to ${fmtDay(to)}`);
+      showToast(`${name} said yes. New due date ${fmtDay(to)}.`);
+    }, 3200);
   },
   message: (data, form) => {
     const text = String(data.get("text") || "").trim();
