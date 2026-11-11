@@ -286,8 +286,8 @@ const SEED_JOBS = [
   { id: "job-12", title: "Wall lights for the front porch", category: "electrical", details: "Two outdoor wall lights, already bought. Switch should be inside the door.", area: "Capitol Site", budget: 1200, client: "bea", status: "Completed", posted: "Nov 4", offers: [],
     hired: "jun", agreed: { price: 1200, start: "2026-11-06", due: "2026-11-08" }, finished: "2026-11-10", paid: { total: 1080, deduction: 120, on: "2026-11-10" } },
   // Electrical jobs Jun can send offers on, one or two per area.
-  { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["jun", "ana"],
-    terms: { jun: { price: 800, due: "2026-11-13" }, ana: { price: 700, due: "2026-11-12" } } },
+  { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["ana"],
+    terms: { ana: { price: 700, due: "2026-11-12" } } },
   { id: "job-5", title: "Breaker keeps tripping at night", category: "electrical", details: "Main breaker trips when the aircon and rice cooker run together.", area: "Talamban", budget: 700, client: "nestor", status: "Open", posted: "15 min ago", offers: [] },
   { id: "job-6", title: "Add two outlets in the bedroom", category: "electrical", details: "Need outlets on the wall by the desk. Concrete wall, surface wiring is fine.", area: "Guadalupe", budget: 900, client: "carlo", status: "Open", posted: "50 min ago", offers: ["arvin"],
     terms: { arvin: { price: 900, due: "2026-11-14" } } },
@@ -295,7 +295,9 @@ const SEED_JOBS = [
   { id: "job-13", title: "Aircon outlet is loose", category: "electrical", details: "The plug wobbles and the outlet gets warm. Condo unit, 12th floor.", area: "IT Park", budget: 500, client: "paolo", status: "Open", posted: "4 hr ago", offers: [] },
   { id: "job-14", title: "Replace a dead light switch", category: "electrical", details: "Hallway switch stopped working. Bulb is fine.", area: "Banilad", budget: 400, client: "rhea", status: "Open", posted: "5 hr ago", offers: [] },
   // Other trades, so the marketplace isn't only electrical.
-  { id: "job-2", title: "Leaking pipe under the kitchen sink", category: "plumbing", details: "Slow drip under the sink, worse at night. Hoping someone can check it this week.", area: "Mabolo", budget: 600, client: "joy", status: "Open", posted: "1 hr ago", offers: [] },
+  // Ramil is on this one, so he shows as busy in the pro list.
+  { id: "job-2", title: "Leaking pipe under the kitchen sink", category: "plumbing", details: "Slow drip under the sink, worse at night. Hoping someone can check it this week.", area: "Mabolo", budget: 600, client: "joy", status: "In progress", posted: "Nov 10", offers: [],
+    hired: "ramil", agreed: { price: 600, start: "2026-11-11", due: "2026-11-13" } },
   { id: "job-3", title: "General cleaning, 2-bedroom condo", category: "cleaning", details: "Kitchen, two bathrooms and floors. Supplies provided if needed.", area: "IT Park", budget: 1500, client: "paolo", status: "Open", posted: "2 hr ago", offers: [] },
   { id: "job-4", title: "Fix a loose cabinet hinge", category: "carpentry", details: "Upper kitchen cabinet door is hanging from one hinge.", area: "Banilad", budget: 400, client: "lena", status: "Open", posted: "3 hr ago", offers: [] },
   { id: "job-7", title: "Pick up medicine and groceries", category: "errands", details: "Pharmacy then the supermarket on Escario. List will be sent in chat.", area: "Capitol Site", budget: 250, client: "bea", status: "Open", posted: "10 min ago", offers: ["jessa"],

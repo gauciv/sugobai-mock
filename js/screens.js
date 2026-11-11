@@ -19,7 +19,7 @@ function rankedWorkers({ category = "", query = "", filters = {} } = {}) {
     const cat = categoryById(w.category);
     if (category && w.category !== category) return false;
     if (filters.verified && !w.idVerified) return false;
-    if (filters.today && !w.available) return false;
+    if (filters.today && !isFreeToday(w)) return false;
     if (filters.top && w.rating < 4.8) return false;
     if (q && !`${w.name} ${cat.label} ${cat.trade} ${w.area} ${w.about} ${w.work.join(" ")}`.toLowerCase().includes(q)) return false;
     return true;
@@ -79,6 +79,7 @@ SCREENS.Worker = () => {
   const cat = categoryById(w.category);
   const own = w.id === WORKER_SELF;
   const saved = state.saved.includes(w.id);
+  const busy = activeJobOf(w.id);
   const tabs = ["About", "Work", "Reviews"];
 
   let body;
@@ -102,7 +103,7 @@ SCREENS.Worker = () => {
       : "";
     body = `<p class="about">${esc(w.about)}</p>${cred}
       <dl class="facts">
-        <div><dt>${icon("clock", "icon-sm")}Next available</dt><dd>${w.available ? "Today" : "Tomorrow"}</dd></div>
+        <div><dt>${icon("clock", "icon-sm")}Next available</dt><dd>${busy ? fmtDay(addDays(busy.agreed.due, 1)) : w.available ? "Today" : "Tomorrow"}</dd></div>
         <div><dt>${icon("calendar-blank", "icon-sm")}On SugoBai since</dt><dd>${w.since}</dd></div>
       </dl>`;
   }
@@ -122,7 +123,9 @@ SCREENS.Worker = () => {
     <div class="profile-body" role="tabpanel">${body}</div>
     ${own ? "" : `<div class="action-bar">
       <button class="btn btn-secondary" type="button" data-action="message" data-id="${w.id}">${icon("chat-circle")}Message</button>
-      <button class="btn btn-primary" type="button" data-action="request" data-id="${w.id}">Request, ${w.from ? "from " : ""}${money(w.rate)}</button>
+      ${busy
+        ? `<button class="btn btn-primary" type="button" disabled>On a job until ${fmtShort(busy.agreed.due)}</button>`
+        : `<button class="btn btn-primary" type="button" data-action="request" data-id="${w.id}">Request, ${w.from ? "from " : ""}${money(w.rate)}</button>`}
     </div>`}`;
 };
 
@@ -284,9 +287,16 @@ function homeownerJobCard(job) {
   </article>`;
 }
 
+// Shown above job lists while Jun is on a job, in place of a disabled button on every card.
+function busyNote() {
+  const job = activeJobOf(WORKER_SELF);
+  return job ? `<p class="job-note busy-note">${icon("briefcase", "icon-sm")}You're on a job until ${fmtDay(job.agreed.due)}. Mark it done to send new offers.</p>` : "";
+}
+
 function workerJobCard(job, { poster = true, canOffer = true } = {}) {
   const client = PEOPLE[job.client];
   const offered = job.offers.includes(WORKER_SELF);
+  canOffer = canOffer && !activeJobOf(WORKER_SELF);
   return `<article class="job-card">
     ${poster ? `<button class="job-poster" type="button" data-action="open-client" data-id="${client.id}">${avatar(client, 32)}<span><b>${esc(client.name)}</b></span></button>` : ""}
     <h3 class="job-card-title">${esc(job.title)}</h3>
@@ -300,8 +310,8 @@ function workerJobCard(job, { poster = true, canOffer = true } = {}) {
   </article>`;
 }
 
-// Jun's job as a worker that isn't paid yet: in progress, or done and waiting for payment.
-const currentJob = () => state.jobs.find((j) => j.hired === WORKER_SELF && (j.status === "In progress" || j.status === "Done"));
+// Jun's job as a worker: the one in progress, else one that's done and waiting for payment.
+const currentJob = () => activeJobOf(WORKER_SELF) || state.jobs.find((j) => j.hired === WORKER_SELF && j.status === "Done");
 
 function currentJobCard(job) {
   const client = PEOPLE[job.client];
@@ -365,6 +375,7 @@ function workerHome() {
     </section>` : ""}
     <section class="section">
       <div class="section-head"><h2>New jobs near you</h2><button class="btn btn-ghost" type="button" data-action="tab" data-tab="Jobs">See all</button></div>
+      ${busyNote()}
       ${state.loading ? skeletonCards(2) : fresh.length ? fresh.map((job) => workerJobCard(job)).join("") : `<p class="saved-empty">You've sent an offer on every job nearby.</p>`}
     </section>
     ${pending.length ? `<section class="section">
@@ -394,6 +405,7 @@ function workerJobsTab() {
     </section>` : ""}
     <section class="section${current ? "" : " section-first"}">
       <div class="section-head"><h2>Open jobs near you</h2></div>
+      ${busyNote()}
       ${state.loading ? skeletonCards(3) : open.length ? open.map((job) => workerJobCard(job)).join("") : emptyState({ icon: "briefcase", title: "No open jobs nearby", text: "New requests show up here as soon as they're posted." })}
     </section>
     ${past.length ? `<section class="section">

@@ -65,6 +65,8 @@ h1, h2, h3, p { margin: 0; }
 .btn-ghost { min-height: 44px; padding: 0 var(--s-2); background: none; color: var(--accent-ink); }
 .btn-sm { min-height: 40px; padding: 0 var(--s-4); font: var(--t-small-strong); }
 .btn-block { width: 100%; }
+/* Disabled reads as information ("On a job until Nov 13"), so keep it legible, not faded */
+.btn:disabled { background: var(--paper); border-color: var(--line); color: var(--ink-2); cursor: not-allowed; }
 .btn-danger { background: var(--danger); color: var(--surface); }
 .btn-danger:active { background: #96191a; }
 

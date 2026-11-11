@@ -139,6 +139,7 @@ button.review-head { width: 100%; padding: 0; border: 0; background: none; color
 .job-current-head { display: flex; align-items: center; justify-content: space-between; }
 .job-current-head .icon-btn { margin: -6px -10px -6px 0; }
 .section-first { margin-top: 0; }
+.busy-note { margin: 0 0 var(--s-3); }
 .row-late { color: var(--danger); }
 
 /* ---------- Inbox and thread ---------- */

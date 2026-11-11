@@ -42,7 +42,7 @@ const state = {
     ],
     "client:mika": [
       { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
-      { from: "jun", text: "Hi Mika! Yes, I can come Friday afternoon. Is there existing wiring on the ceiling?", time: "9:14 AM" },
+      { from: "jun", text: "Hi Mika! I'm finishing a job in Banilad until tomorrow. Once it's done I'll send you an offer.", time: "9:14 AM" },
     ],
     "client:joy": [
       { from: "joy", text: "Hi Jun, are you free to check our outlets in Mabolo this Saturday?", time: "Yesterday" },
@@ -166,6 +166,26 @@ function later(fn, ms = 2600) {
   setTimeout(() => { fn(); render({ keepScroll: true }); }, ms);
 }
 
+// One job at a time: hiring a pro withdraws their offers everywhere else, and a request
+// still waiting on them reopens to other pros.
+function hireWorker(job, workerId) {
+  const { price, due } = offerTerms(job, workerId);
+  Object.assign(job, { status: "In progress", hired: workerId, offers: [], agreed: { price, start: state.today, due } });
+  let withdrawn = 0;
+  for (const other of state.jobs) {
+    if (other === job) continue;
+    if (other.offers.includes(workerId)) {
+      other.offers = other.offers.filter((id) => id !== workerId);
+      withdrawn += 1;
+    }
+    if (other.requested === workerId && other.status === "Requested") {
+      delete other.requested;
+      other.status = "Open";
+    }
+  }
+  return { price, due, withdrawn };
+}
+
 const nowTime = () => new Date().toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
 const jobById = (id) => state.jobs.find((j) => j.id === id);
 // Thread between Jun and the other side of a job, from Jun's side.
@@ -231,9 +251,7 @@ const ACTIONS = {
   },
   hire: (el) => {
     const [jobId, workerId] = el.dataset.id.split(":");
-    const job = jobById(jobId);
-    const { price, due } = offerTerms(job, workerId);
-    Object.assign(job, { status: "In progress", hired: workerId, offers: [], agreed: { price, start: state.today, due } });
+    const { price, due } = hireWorker(jobById(jobId), workerId);
     const name = firstName(workerById(workerId).name);
     postEvent(`pro:${workerId}`, `You hired ${name} for ${money(price)}, due ${fmtDay(due)}`);
     render({ keepScroll: true });
@@ -283,7 +301,10 @@ const ACTIONS = {
     render({ keepScroll: true });
     showToast("Job deleted");
   },
-  offer: (el) => openSheet(offerSheet(state.jobs.find((j) => j.id === el.dataset.id))),
+  offer: (el) => {
+    if (activeJobOf(WORKER_SELF)) return showToast("Finish your current job first");
+    openSheet(offerSheet(jobById(el.dataset.id)));
+  },
   "switch-role": switchRole,
   "my-profile": () => go("Worker", { workerId: WORKER_SELF, workerTab: "About" }),
 };
@@ -332,7 +353,17 @@ const FORMS = {
     sendMessage(`client:${job.client}`, `${note ? `${note} ` : ""}My offer: ${money(price)}, done by ${fmtDay(due)}.`);
     closeSheet();
     render({ keepScroll: true });
-    showToast(`Offer sent to ${firstName(PEOPLE[job.client].name)}`);
+    const client = PEOPLE[job.client];
+    const name = firstName(client.name);
+    showToast(`Offer sent to ${name}`);
+    // The homeowner accepts. Jun is then on that job, and his other offers are withdrawn.
+    later(() => {
+      if (job.status !== "Open" || !job.offers.includes(WORKER_SELF) || activeJobOf(WORKER_SELF)) return;
+      const { withdrawn } = hireWorker(job, WORKER_SELF);
+      postEvent(`client:${client.id}`, `${name} hired you for ${money(price)}, due ${fmtDay(due)}`);
+      receive(`client:${client.id}`, client.id, `You're hired, Jun! See you soon.`);
+      showToast(`${name} hired you${withdrawn ? `, so your other ${withdrawn === 1 ? "offer was" : `${withdrawn} offers were`} withdrawn` : ""}`);
+    }, 4500);
   },
   pay: (data, form) => {
     const job = jobById(form.dataset.id);

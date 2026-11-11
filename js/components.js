@@ -44,7 +44,14 @@ function price(worker) {
   return `<span class="price">${worker.from ? "From " : ""}${money(worker.rate)}<small> / ${esc(worker.unit)}</small></span>`;
 }
 
+// One job at a time: a worker with a job in progress can't send offers or be hired
+// until they mark it done. Returns that job, or undefined when they're free.
+const activeJobOf = (workerId) => state.jobs.find((j) => j.hired === workerId && j.status === "In progress");
+const isFreeToday = (worker) => worker.available && !activeJobOf(worker.id);
+
 function availability(worker) {
+  const busy = activeJobOf(worker.id);
+  if (busy) return `<span class="availability">On a job until ${fmtShort(busy.agreed.due)}</span>`;
   return worker.available
     ? `<span class="availability is-today">Available today</span>`
     : `<span class="availability">Available tomorrow</span>`;
