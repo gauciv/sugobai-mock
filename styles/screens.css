@@ -160,11 +160,39 @@ button.review-head { width: 100%; padding: 0; border: 0; background: none; color
 .bubble time { display: block; margin-top: 2px; color: var(--ink-3); font: var(--t-caption); font-weight: 400; }
 .bubble.mine time { color: #c9ced6; text-align: right; }
 
-.composer {
-  position: sticky; bottom: 0; display: flex; align-items: center; gap: var(--s-1);
-  margin: 0 calc(-1 * var(--gutter)); padding: var(--s-2) var(--s-2) calc(var(--s-2) + var(--safe-bottom));
+/* Bottom of a chat: composer, messages-left hint, or a read-only note */
+.composer-dock {
+  position: sticky; bottom: 0; margin: 0 calc(-1 * var(--gutter)); padding-bottom: var(--safe-bottom);
   background: var(--surface); box-shadow: var(--shadow-float);
 }
+.composer { display: flex; align-items: center; gap: var(--s-1); padding: var(--s-2); }
+.composer-hint { padding: var(--s-2) var(--gutter) 0; color: var(--ink-2); font: var(--t-caption); font-weight: 400; }
+.composer-locked { display: flex; align-items: flex-start; gap: var(--s-2); padding: var(--s-4) var(--gutter); color: var(--ink-2); font: var(--t-small); }
+.composer-locked .icon { margin-top: 2px; }
+
+/* The job a chat is about, under its header */
+.thread-job {
+  display: flex; align-items: center; gap: var(--s-3); width: 100%; margin-top: var(--s-2); padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); color: var(--ink); text-align: left;
+}
+.thread-job .row-icon { width: 36px; height: 36px; color: var(--accent-ink); background: var(--accent-wash); }
+.thread-job-body { flex: 1; min-width: 0; display: grid; justify-items: start; gap: 2px; }
+.thread-job-body b { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: var(--t-small-strong); }
+.thread-job > .icon { color: var(--ink-3); }
+
+/* Inbox: one card per job, its chats inside */
+.inbox-group { border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); overflow: hidden; }
+.inbox-group + .inbox-group { margin-top: var(--s-3); }
+.inbox-group.is-live { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.inbox-job { display: flex; gap: var(--s-3); padding: var(--s-3) 14px; border-bottom: 1px solid var(--line); }
+.inbox-job .row-icon { color: var(--accent-ink); background: var(--accent-wash); }
+.inbox-job-body { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.inbox-job h2 { font: var(--t-body-strong); }
+.inbox-job-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.inbox-pin { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-ink); font: var(--t-caption); }
+.row.is-closed .avatar, .row.is-closed .row-meta { opacity: 0.6; }
+
+.offer-actions { display: flex; align-items: center; gap: 2px; flex: none; }
 .composer input { flex: 1; min-width: 0; height: 44px; padding: 0 var(--s-4); border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--paper); font: var(--t-body); font-size: 16px; }
 .composer input:focus { outline: none; border-color: var(--ink); }
 .composer-send { color: var(--accent-ink); }

@@ -20,41 +20,48 @@ const state = {
   saved: ["marites", "rico"],
   today: DEMO_TODAY,
   jobs: structuredClone(SEED_JOBS),
-  // "pro:<workerId>": Jun hiring a pro. "client:<personId>": Jun working for a homeowner.
-  // Messages from "system" are job events (hired, due date moved, paid) shown inline.
+  // Every chat is about one job, between its homeowner and one pro: "<jobId>:<workerId>".
+  // Newest first, so key order is inbox order. Messages from "system" are job events.
   threads: {
-    "pro:nonoy": [
-      { from: "jun", text: "Hi Nonoy, can you look at our gate this week? It's rusting at the bottom.", time: "Nov 9" },
-      { from: "nonoy", text: "Yes po, I can start tomorrow. I'll scrape and prime first so it lasts.", time: "Nov 9" },
+    "job-clean:grace": [
+      { from: "grace", text: "Hello sir! Si Grace ni, nag offer ko sa imong deep clean. Pwede ra ko sa Friday, buntag ko moadto. Magdala ba ko vacuum o naa ra mo?", time: "11:40 AM" },
+      { from: "jun", text: "Naa mi vacuum Te. Ang kusina jud ang pinaka hugaw, daghan mantika sa bungbong hehe", time: "11:52 AM" },
+    ],
+    "job-clean:marites": [
+      { from: "marites", text: "Maayong buntag Sir Jun! Kung ako imong kuhaon, magdala ko ug kauban para mahuman ra sa usa ka adlaw 😊", time: "10:30 AM" },
+    ],
+    "job-gate:nonoy": [
+      { from: "jun", text: "Bai Nonoy, pwede nimo ma check among gate karong semanaha? Nag taya na man sa ubos.", time: "Nov 9" },
+      { from: "nonoy", text: "Sige sir, ugma ra ko makasugod. Kiskisan sa nako ang taya unya primer usa para dili dayon mo balik.", time: "Nov 9" },
       { from: "system", text: "You hired Nonoy for ₱1,800, due Fri, Nov 13", time: "Nov 9" },
-      { from: "nonoy", text: "Pasensya po, it rained on Tuesday so the primer needs one more day. I asked to move the date to Saturday.", time: "8:12 AM" },
+      { from: "nonoy", text: "Sir pasensya kaayo, nag ulan man gud niadtong Martes, dili pa uga ang primer. Nag request ko nga i-move sa Sabado ang due ha.", time: "8:12 AM" },
     ],
-    "pro:marites": [
-      { from: "system", text: "You paid Marites ₱900", time: "Yesterday" },
-      { from: "jun", text: "Thank you, Ate Marites! The house looks great.", time: "Yesterday" },
-      { from: "marites", text: "Salamat po! See you again next month.", time: "Yesterday" },
+    "job-sala:marites": [
+      { from: "system", text: "You confirmed the job. Final price ₱900", time: "Yesterday" },
+      { from: "jun", text: "Salamat kaayo Te Marites! Limpyo kaayo ang balay, nakuyawan ang mga bisita hehe", time: "Yesterday" },
+      { from: "marites", text: "Way sapayan sir! Chat lang ko balik next month kung kinahanglan nimo 🙏", time: "Yesterday" },
     ],
-    "pro:rico": [
-      { from: "rico", text: "The faucet part is ₱450. Labor is ₱550, so ₱1,000 total.", time: "Nov 8" },
-      { from: "jun", text: "Okay, go ahead. Thanks Rico.", time: "Nov 8" },
+    "job-faucet:rico": [
+      { from: "rico", text: "Sir ang piyesa sa gripo ₱450, labor ₱550. ₱1,000 tanan.", time: "Nov 8" },
+      { from: "jun", text: "Sige Rico, go lang. Salamat", time: "Nov 8" },
       { from: "system", text: "Rico marked the job done", time: "Yesterday" },
-      { from: "rico", text: "Done po. The new faucet is in and there's no more drip. Sorry it took an extra day.", time: "Yesterday" },
+      { from: "rico", text: "Sir human na. Bag-o na ang gripo, wala nay tulo. Pasensya kay nalangan ug usa ka adlaw, nahutdan man ug stock ang hardware.", time: "Yesterday" },
     ],
-    "client:mika": [
-      { from: "mika", text: "Hi Jun, can you install a ceiling fan in Lahug this week?", time: "9:02 AM" },
-      { from: "jun", text: "Hi Mika! I'm finishing a job in Banilad until tomorrow. Once it's done I'll send you an offer.", time: "9:14 AM" },
+    "job-1:jun": [
+      { from: "mika", text: "Hi Jun! Pwede ka mag install ug ceiling fan diri sa Lahug karong semanaha?", time: "9:02 AM" },
+      { from: "jun", text: "Hi Ma'am Mika! Naa pa koy gitapos nga trabaho sa Banilad hangtod ugma. Inig human ana, mag send dayon ko ug offer ha.", time: "9:14 AM" },
     ],
-    "client:joy": [
-      { from: "joy", text: "Hi Jun, are you free to check our outlets in Mabolo this Saturday?", time: "Yesterday" },
+    "job-11:jun": [
+      { from: "joy", text: "Jun, libre ka sa Sabado? Pa check unta nako among outlets diri sa Mabolo, mo spark man gud inig saksak 😅", time: "Yesterday" },
     ],
-    "client:lena": [
+    "job-lena:jun": [
       { from: "system", text: "Lena hired you for ₱900, due Fri, Nov 13", time: "Nov 10" },
-      { from: "jun", text: "Good afternoon po. I'm on my way, around 15 minutes.", time: "Yesterday" },
-      { from: "jun", text: "The old fixture is out. The new one needs a longer bracket, so I'll bring it tomorrow and finish.", time: "Yesterday" },
-      { from: "lena", text: "Okay po, thank you Jun!", time: "Yesterday" },
+      { from: "jun", text: "Maayong hapon Ma'am Lena. Otw na ko, mga 15 mins.", time: "Yesterday" },
+      { from: "jun", text: "Ma'am natangtang na nako ang daan nga fixture. Kulang lang ug mas taas nga bracket ang bag-o, dal-on nako ugma para mahuman na.", time: "Yesterday" },
+      { from: "lena", text: "Sige Jun, salamat kaayo! Naa ra ko diri ugma tibuok adlaw.", time: "Yesterday" },
     ],
   },
-  unread: ["pro:nonoy", "pro:rico", "client:joy"],
+  unread: ["job-gate:nonoy", "job-faucet:rico", "job-clean:marites", "job-11:jun"],
 };
 
 const TABS = ["Home", "Jobs", "Inbox", "Profile"];
@@ -98,13 +105,19 @@ function render({ keepScroll = false } = {}) {
   const screen = SCREENS[state.view] || SCREENS.Home;
   scrollEl.innerHTML = screen();
   renderedKey = key;
-  if (draft) scrollEl.querySelector(".composer input").value = draft;
+  const input = scrollEl.querySelector(".composer input");
+  if (draft && input) input.value = draft;
   scrollEl.dataset.view = state.view;
   appEl.classList.toggle("no-tabbar", NO_TABBAR.includes(state.view));
   document.querySelectorAll(".tab").forEach((tab) => {
     if (tab.dataset.tab === currentTab()) tab.setAttribute("aria-current", "page");
     else tab.removeAttribute("aria-current");
   });
+  // Unread dot on the Inbox tab, for chats in the current mode.
+  const unread = state.unread.some((id) => state.threads[id] && inRole(id));
+  const inboxTab = document.querySelector('.tab[data-tab="Inbox"]');
+  inboxTab.toggleAttribute("data-unread", unread);
+  inboxTab.setAttribute("aria-label", unread ? "Inbox, new messages" : "Inbox");
   scrollEl.scrollTop = keepScroll ? top : 0;
   scrollEl.querySelectorAll("img").forEach((img) => { if (img.complete && img.naturalWidth) markLoaded(img); });
 }
@@ -188,8 +201,48 @@ function hireWorker(job, workerId) {
 
 const nowTime = () => new Date().toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
 const jobById = (id) => state.jobs.find((j) => j.id === id);
-// Thread between Jun and the other side of a job, from Jun's side.
-const jobThread = (job) => (job.client === WORKER_SELF ? `pro:${job.hired}` : `client:${job.client}`);
+
+/* ---------- Chats: one per job and pro ---------- */
+const threadKey = (jobId, workerId) => `${jobId}:${workerId}`;
+// The chat with whoever was hired. When Jun is the worker, job.hired is Jun himself.
+const jobThread = (job) => threadKey(job.id, job.hired);
+
+// Who's on the other side of a chat, and whether Jun is the homeowner in it.
+function threadInfo(id) {
+  const [jobId, workerId] = id.split(":");
+  const job = jobById(jobId);
+  const asClient = job.client === WORKER_SELF;
+  return { job, workerId, asClient, other: asClient ? workerById(workerId) : PEOPLE[job.client] };
+}
+
+// "open": nobody hired yet, so messages are capped. "active": with the hired pro.
+// "closed": the job is completed or went to another pro, so the chat is read-only.
+function threadStage(id) {
+  const { job, workerId } = threadInfo(id);
+  if (job.status === "Completed") return "closed";
+  if (job.hired) return job.hired === workerId ? "active" : "closed";
+  return "open";
+}
+// PH mobile numbers (0917 123 4567, +63 917…), or any run of 7+ digits with spaces or dashes.
+const PHONE_SRC = String.raw`(?:\+?63|0)?9\d{2}[\s-]?\d{3}[\s-]?\d{4}|\d[\d\s-]{5,}\d`;
+const PHONE = new RegExp(PHONE_SRC);
+const PHONE_ALL = new RegExp(PHONE_SRC, "g");
+const sentCount = (id) => (state.threads[id] || []).filter((m) => m.from === WORKER_SELF).length;
+const messagesLeft = (id) => Math.max(0, CHAT_RULE.preHireLimit - sentCount(id));
+
+// Homeowner mode shows chats on Jun's own jobs; worker mode, chats where Jun is the pro.
+function inRole(id) {
+  const [jobId, workerId] = id.split(":");
+  const job = jobById(jobId);
+  if (!job) return false;
+  return state.role === "worker" ? workerId === WORKER_SELF : job.client === WORKER_SELF;
+}
+
+function openThread(id) {
+  state.threads[id] ||= [];
+  state.unread = state.unread.filter((u) => u !== id);
+  go("Thread", { threadId: id });
+}
 
 const ACTIONS = {
   back,
@@ -203,18 +256,26 @@ const ACTIONS = {
   "open-client": (el) => go("Client", { clientId: el.dataset.id }),
   "worker-tab": (el) => { state.workerTab = el.dataset.id; render({ keepScroll: true }); },
   save: (el) => toggleSaved(el.dataset.id),
+  // Chats are about a job: reopen one that's still going, or pick a job to ask about.
   message: (el) => {
-    const id = `pro:${el.dataset.id}`;
-    if (!state.threads[id]) state.threads[id] = [];
-    go("Thread", { threadId: id });
+    const w = workerById(el.dataset.id);
+    const existing = Object.keys(state.threads).find((id) => id.endsWith(`:${w.id}`) && inRole(id) && threadStage(id) !== "closed");
+    if (existing) return openThread(existing);
+    const jobs = state.jobs.filter((j) => j.client === WORKER_SELF && j.category === w.category && !j.hired && (j.status === "Open" || j.status === "Requested"));
+    if (jobs.length === 1) return openThread(threadKey(jobs[0].id, w.id));
+    openSheet(messageAboutSheet({ jobs, worker: w }));
   },
   "message-client": (el) => {
-    const id = `client:${el.dataset.id}`;
-    if (!state.threads[id]) state.threads[id] = [];
-    go("Thread", { threadId: id });
+    const c = PEOPLE[el.dataset.id];
+    const existing = Object.keys(state.threads).find((id) => id.endsWith(`:${WORKER_SELF}`) && jobById(id.split(":")[0])?.client === c.id && threadStage(id) !== "closed");
+    if (existing) return openThread(existing);
+    const jobs = state.jobs.filter((j) => j.client === c.id && j.category === me().category && j.status === "Open");
+    if (jobs.length === 1) return openThread(threadKey(jobs[0].id, WORKER_SELF));
+    openSheet(messageAboutSheet({ jobs, client: c }));
   },
+  "start-thread": (el) => { closeSheet(); openThread(el.dataset.id); },
   attach: () => showToast("Photo sharing isn't available in this preview"),
-  "open-thread": (el) => { state.unread = state.unread.filter((id) => id !== el.dataset.id); go("Thread", { threadId: el.dataset.id }); },
+  "open-thread": (el) => openThread(el.dataset.id),
   area: () => openSheet(areaSheet()),
   "set-area": (el) => {
     closeSheet();
@@ -236,7 +297,8 @@ const ACTIONS = {
     const cat = categoryById(worker.category);
     const job = { id: `job-${Date.now()}`, title: `${cat.label} request for ${name}`, category: worker.category, details: "", area: state.area, budget: worker.rate, client: WORKER_SELF, status: "Requested", posted: "Just now", offers: [], requested: worker.id };
     state.jobs.unshift(job);
-    sendMessage(`pro:${worker.id}`, `Hi ${name}, I sent you a request for ${cat.label.toLowerCase()} work in ${state.area}.`);
+    closeSheet();
+    sendMessage(threadKey(job.id, worker.id), `Hi ${name}! Nag send ko nimo ug request para sa ${cat.label.toLowerCase()} diri sa ${state.area}. Libre ka karong semanaha?`);
     go("Jobs");
     showToast(`Request sent to ${name}`);
     // The pro answers with a price and a finish date, which Jun can then hire.
@@ -245,7 +307,7 @@ const ACTIONS = {
       const due = addDays(state.today, 2);
       job.offers = [worker.id];
       job.terms = { [worker.id]: { price: worker.rate, due } };
-      receive(`pro:${worker.id}`, worker.id, `Hi Jun! I can do it for ${money(worker.rate)} and finish by ${fmtDay(due)}.`);
+      receive(threadKey(job.id, worker.id), worker.id, `Hello sir! Kaya ra na nako. ${money(worker.rate)} akong singil, mahuman nako by ${fmtDay(due)}.`);
       showToast(`${name} sent a price and finish date`);
     });
   },
@@ -253,7 +315,7 @@ const ACTIONS = {
     const [jobId, workerId] = el.dataset.id.split(":");
     const { price, due } = hireWorker(jobById(jobId), workerId);
     const name = firstName(workerById(workerId).name);
-    postEvent(`pro:${workerId}`, `You hired ${name} for ${money(price)}, due ${fmtDay(due)}`);
+    postEvent(threadKey(jobId, workerId), `You hired ${name} for ${money(price)}, due ${fmtDay(due)}`);
     render({ keepScroll: true });
     showToast(`You hired ${name}. Due ${fmtDay(due)}.`);
   },
@@ -272,8 +334,20 @@ const ACTIONS = {
     render({ keepScroll: true });
     showToast(`Due date stays ${fmtDay(job.agreed.due)}`);
   },
-  pay: (el) => openSheet(paySheet(jobById(el.dataset.id))),
+  "check-work": (el) => openSheet(confirmWorkSheet(jobById(el.dataset.id))),
+  // Homeowner confirms the work. SugoBai records the final quote; payment happens offline.
+  "confirm-work": (el) => {
+    const job = jobById(el.dataset.id);
+    const w = workerById(job.hired);
+    const d = lateDeduction(job, state.today);
+    Object.assign(job, { status: "Completed", final: { total: d.total, deduction: d.amount, on: state.today } });
+    w.jobs += 1;
+    postEvent(jobThread(job), `You confirmed the job. Final price ${money(d.total)}`);
+    render({ keepScroll: true });
+    openSheet(reviewSheet(job)); // the review sheet says what to pay, so no toast under it
+  },
   review: (el) => openSheet(reviewSheet(jobById(el.dataset.id))),
+  "rate-client": (el) => openSheet(clientReviewSheet(jobById(el.dataset.id))),
   "ask-time": (el) => openSheet(moreTimeSheet(jobById(el.dataset.id))),
   "mark-done": (el) => openSheet(markDoneSheet(jobById(el.dataset.id))),
   "confirm-done": (el) => {
@@ -284,19 +358,22 @@ const ACTIONS = {
     postEvent(jobThread(job), "You marked the job done");
     closeSheet();
     render({ keepScroll: true });
-    showToast(`${name} will check the work and pay`);
+    showToast(`${name} will check the work`);
     later(() => {
       const d = lateDeduction(job, state.today);
-      Object.assign(job, { status: "Completed", paid: { total: d.total, deduction: d.amount, on: state.today } });
+      Object.assign(job, { status: "Completed", final: { total: d.total, deduction: d.amount, on: state.today } });
       me().jobs += 1;
-      postEvent(jobThread(job), `${name} paid you ${money(d.total)}`);
-      receive(jobThread(job), client.id, "Salamat Jun! Everything works. I'll book you again.");
-      showToast(`${name} paid you ${money(d.total)}`);
+      postEvent(jobThread(job), `${name} confirmed the job. Final price ${money(d.total)}`);
+      receive(jobThread(job), client.id, "Salamat kaayo Jun! Okay na kaayo tanan. Kuhaon ra tika balik sunod 👍");
+      showToast(`${name} confirmed the job. Final price ${money(d.total)}`);
     }, 3200);
   },
   "delete-job": (el) => openSheet(deleteJobSheet(jobById(el.dataset.id))),
   "confirm-delete": (el) => {
     state.jobs = state.jobs.filter((j) => j.id !== el.dataset.id);
+    // Its chats go with it: every chat belongs to a job.
+    for (const id of Object.keys(state.threads)) if (id.startsWith(`${el.dataset.id}:`)) delete state.threads[id];
+    state.unread = state.unread.filter((id) => !id.startsWith(`${el.dataset.id}:`));
     closeSheet();
     render({ keepScroll: true });
     showToast("Job deleted");
@@ -322,6 +399,30 @@ document.querySelector("#tabbar").addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && sheetRoot.innerHTML) closeSheet();
+});
+
+// Review text: show the problem inline and keep the sheet open until it passes REVIEW_RULE.
+function reviewOk(form, text) {
+  const problem = reviewProblem(text);
+  const box = form.querySelector("[data-review-text]");
+  form.querySelector("[data-review-error]").textContent = problem;
+  box.toggleAttribute("aria-invalid", !!problem);
+  if (problem) box.focus();
+  return !problem;
+}
+
+// Live character count while writing a review.
+document.addEventListener("input", (event) => {
+  const box = event.target.closest("[data-review-text]");
+  if (!box) return;
+  const n = box.value.trim().length;
+  const count = box.form.querySelector("[data-review-count]");
+  count.textContent = `${n} / ${REVIEW_RULE.max}`;
+  count.classList.toggle("is-short", n < REVIEW_RULE.min);
+  if (!reviewProblem(box.value.trim())) {
+    box.form.querySelector("[data-review-error]").textContent = "";
+    box.removeAttribute("aria-invalid");
+  }
 });
 
 document.addEventListener("submit", (event) => {
@@ -350,7 +451,7 @@ const FORMS = {
     job.offers.push(WORKER_SELF);
     (job.terms ||= {})[WORKER_SELF] = { price, due };
     const note = String(data.get("note") || "").trim();
-    sendMessage(`client:${job.client}`, `${note ? `${note} ` : ""}My offer: ${money(price)}, done by ${fmtDay(due)}.`);
+    sendMessage(threadKey(job.id, WORKER_SELF), `${note ? `${note} ` : ""}Akong offer: ${money(price)}, mahuman by ${fmtDay(due)}.`);
     closeSheet();
     render({ keepScroll: true });
     const client = PEOPLE[job.client];
@@ -360,33 +461,37 @@ const FORMS = {
     later(() => {
       if (job.status !== "Open" || !job.offers.includes(WORKER_SELF) || activeJobOf(WORKER_SELF)) return;
       const { withdrawn } = hireWorker(job, WORKER_SELF);
-      postEvent(`client:${client.id}`, `${name} hired you for ${money(price)}, due ${fmtDay(due)}`);
-      receive(`client:${client.id}`, client.id, `You're hired, Jun! See you soon.`);
+      postEvent(jobThread(job), `${name} hired you for ${money(price)}, due ${fmtDay(due)}`);
+      receive(jobThread(job), client.id, `Sige Jun, ikaw na lang akong kuhaon. Kita ta!`);
       showToast(`${name} hired you${withdrawn ? `, so your other ${withdrawn === 1 ? "offer was" : `${withdrawn} offers were`} withdrawn` : ""}`);
     }, 4500);
-  },
-  pay: (data, form) => {
-    const job = jobById(form.dataset.id);
-    const w = workerById(job.hired);
-    const d = lateDeduction(job, state.today);
-    Object.assign(job, { status: "Completed", paid: { total: d.total, deduction: d.amount, on: state.today, method: String(data.get("method")) } });
-    w.jobs += 1;
-    postEvent(`pro:${w.id}`, `You paid ${firstName(w.name)} ${money(d.total)}`);
-    render({ keepScroll: true });
-    openSheet(reviewSheet(job)); // the review sheet confirms the payment, so no toast under it
   },
   review: (data, form) => {
     const job = jobById(form.dataset.id);
     const w = workerById(job.hired);
     const stars = Number(data.get("stars"));
     const text = String(data.get("text") || "").trim();
+    if (!reviewOk(form, text)) return;
     job.reviewed = stars;
-    (REVIEW_TEXT[w.id] ||= []).unshift([WORKER_SELF, parseDay(state.today).toLocaleDateString("en-US", { month: "short", year: "numeric" }), text, stars]);
+    (REVIEW_TEXT[w.id] ||= []).unshift([WORKER_SELF, monthYear(state.today), text, stars]);
     w.rating = Math.round(((w.rating * w.reviews + stars) / (w.reviews + 1)) * 10) / 10;
     w.reviews += 1;
     closeSheet();
     render({ keepScroll: true });
     showToast(`Thanks! Your review is on ${firstName(w.name)}'s profile.`);
+  },
+  "review-client": (data, form) => {
+    const job = jobById(form.dataset.id);
+    const c = PEOPLE[job.client];
+    const stars = Number(data.get("stars"));
+    const text = String(data.get("text") || "").trim();
+    if (!reviewOk(form, text)) return;
+    job.clientReviewed = stars;
+    (CLIENT_REVIEWS[c.id] ||= []).unshift([WORKER_SELF, monthYear(state.today), text, stars]);
+    c.rating = Math.round(((c.rating * c.hires + stars) / (c.hires + 1)) * 10) / 10;
+    closeSheet();
+    render({ keepScroll: true });
+    showToast(`Thanks! Other pros will see your review of ${firstName(c.name)}.`);
   },
   "more-time": (data, form) => {
     const job = jobById(form.dataset.id);
@@ -407,9 +512,17 @@ const FORMS = {
     }, 3200);
   },
   message: (data, form) => {
-    const text = String(data.get("text") || "").trim();
-    if (!text) return;
-    sendMessage(state.threadId, text);
+    let text = String(data.get("text") || "").trim();
+    const id = state.threadId;
+    const stage = threadStage(id);
+    if (!text || stage === "closed" || (stage === "open" && !messagesLeft(id))) return;
+    // Before hiring, phone numbers are hidden so the job is agreed on SugoBai.
+    if (stage === "open" && PHONE.test(text)) {
+      text = text.replace(PHONE_ALL, "[number hidden until hired]");
+      showToast("Phone numbers are shared after hiring");
+    }
+    sendMessage(id, text);
+    form.reset(); // so render doesn't carry the sent text over as a draft
     render();
     scrollEl.scrollTop = scrollEl.scrollHeight;
     scrollEl.querySelector("input[name=text]")?.focus();

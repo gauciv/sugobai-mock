@@ -263,28 +263,48 @@ const REVIEW_TEXT = {
 // The demo runs on a fixed "today" so due dates and countdowns read the same at every presentation.
 const DEMO_TODAY = "2026-11-12";
 
-// Late rule: for each day a worker finishes past the agreed date, 5% of the agreed price
-// comes off what they're paid, up to 25%. An approved extension moves the date with no deduction.
+// SugoBai quotes prices but never handles money: homeowners pay pros directly, offline.
+// Late rule: for each day a worker finishes past the agreed date, 5% comes off the final
+// quoted price, up to 25%. An approved extension moves the date with no deduction.
 const LATE_RULE = { perDay: 0.05, cap: 0.25 };
 
+// Chat rule: every chat is about a job. Before anyone is hired, each side can send up to
+// 5 messages, and phone numbers are hidden, so jobs are agreed on SugoBai.
+const CHAT_RULE = { preHireLimit: 5 };
+
+// Review rule, for both sides (homeowner rating a pro, pro rating a homeowner): at least a
+// proper sentence, so no one-word "ok" reviews. Only distinct words with 2+ letters count,
+// so "good good good good good" doesn't pass.
+const REVIEW_RULE = { min: 30, max: 300, minWords: 5 };
+function reviewProblem(text) {
+  const words = new Set(text.toLowerCase().split(/\s+/).filter((w) => /\p{L}{2,}/u.test(w))).size;
+  if (text.length < REVIEW_RULE.min || words < REVIEW_RULE.minWords) {
+    return `Write at least one full sentence (${REVIEW_RULE.minWords}+ words, ${REVIEW_RULE.min}+ characters).`;
+  }
+  if (text.length > REVIEW_RULE.max) return `Keep it under ${REVIEW_RULE.max} characters.`;
+  return "";
+}
+const monthYear = (iso) => parseDay(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
 // Job lifecycle: Open (taking offers) or Requested (sent to one pro) → In progress (hired,
-// with an agreed price and due date) → Done (pro marked it finished) → Completed (paid).
+// with an agreed price and due date) → Done (pro marked it finished) → Completed (homeowner
+// confirmed; `final` holds the final quoted price after any late deduction).
 const SEED_JOBS = [
   // Posted by the account holder (Jun, as a homeowner).
   { id: "job-faucet", title: "Replace the bathroom faucet", category: "plumbing", details: "Faucet drips and the handle is loose. Part to be bought by the plumber.", area: "Talamban", budget: 1000, client: "jun", status: "Done", posted: "Nov 8", offers: [],
     hired: "rico", agreed: { price: 1000, start: "2026-11-09", due: "2026-11-10" }, finished: "2026-11-11" },
   { id: "job-gate", title: "Repaint the front gate and grills", category: "painting", details: "Steel gate and window grills, some rust. Paint already bought.", area: "Talamban", budget: 1800, client: "jun", status: "In progress", posted: "Nov 9", offers: [],
     hired: "nonoy", agreed: { price: 1800, start: "2026-11-10", due: "2026-11-13" },
-    extension: { to: "2026-11-14", reason: "It rained on Tuesday, so the primer needs one more day to dry before the topcoat." } },
+    extension: { to: "2026-11-14", reason: "Nag ulan niadtong Martes, dili pa uga ang primer. Usa pa ka adlaw usa ma topcoat." } },
   { id: "job-clean", title: "Deep clean before the fiesta", category: "cleaning", details: "Two-storey house, three bedrooms. Kitchen and bathrooms most important.", area: "Talamban", budget: 1500, client: "jun", status: "Open", posted: "3 hr ago", offers: ["marites", "grace"],
     terms: { marites: { price: 1500, due: "2026-11-14" }, grace: { price: 1400, due: "2026-11-13" } } },
   { id: "job-sala", title: "Clean the house before guests arrive", category: "cleaning", details: "", area: "Talamban", budget: 900, client: "jun", status: "Completed", posted: "Nov 5", offers: [],
-    hired: "marites", agreed: { price: 900, start: "2026-11-11", due: "2026-11-11" }, finished: "2026-11-11", paid: { total: 900, deduction: 0, on: "2026-11-11" }, reviewed: 5 },
+    hired: "marites", agreed: { price: 900, start: "2026-11-11", due: "2026-11-11" }, finished: "2026-11-11", final: { total: 900, deduction: 0, on: "2026-11-11" }, reviewed: 5 },
   // Jun's current electrical job, and one he finished late last week.
   { id: "job-lena", title: "Replace the kitchen light fixture", category: "electrical", details: "Old fluorescent fixture flickers. New LED fixture already bought.", area: "Banilad", budget: 900, client: "lena", status: "In progress", posted: "Nov 10", offers: [],
     hired: "jun", agreed: { price: 900, start: "2026-11-11", due: "2026-11-13" } },
   { id: "job-12", title: "Wall lights for the front porch", category: "electrical", details: "Two outdoor wall lights, already bought. Switch should be inside the door.", area: "Capitol Site", budget: 1200, client: "bea", status: "Completed", posted: "Nov 4", offers: [],
-    hired: "jun", agreed: { price: 1200, start: "2026-11-06", due: "2026-11-08" }, finished: "2026-11-10", paid: { total: 1080, deduction: 120, on: "2026-11-10" } },
+    hired: "jun", agreed: { price: 1200, start: "2026-11-06", due: "2026-11-08" }, finished: "2026-11-10", final: { total: 1080, deduction: 120, on: "2026-11-10" } },
   // Electrical jobs Jun can send offers on, one or two per area.
   { id: "job-1", title: "Install a ceiling fan in the sala", category: "electrical", details: "One ceiling fan, already bought. Ceiling is plywood, wiring is already there.", area: "Lahug", budget: 800, client: "mika", status: "Open", posted: "25 min ago", offers: ["ana"],
     terms: { ana: { price: 700, due: "2026-11-12" } } },
